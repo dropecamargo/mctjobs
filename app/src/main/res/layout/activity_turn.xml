@@ -1,0 +1,153 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/greybg"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <!-- Login progress -->
+    <ProgressBar
+        android:id="@+id/progress_view"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/form_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="8dp">
+
+            <LinearLayout
+                android:id="@+id/turn_vehicle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp"
+                android:orientation="vertical">
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/turn_info_vehicle"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/textColorPrimary"
+                        android:textIsSelectable="true"
+                        android:padding="8dp"
+                        android:textSize="16dp"/>
+                </android.support.v7.widget.CardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/turn_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp"
+                android:orientation="vertical">
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/turn_info_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/textColorPrimary"
+                        android:textIsSelectable="true"
+                        android:padding="8dp"
+                        android:textSize="16dp"/>
+                </android.support.v7.widget.CardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/turn_form"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="8dp">
+                        <com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner
+                            android:id="@+id/spinner_office"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/prompt_office"
+                            android:spinnerMode="dialog"
+                            app:met_floatingLabel="normal"
+                            app:met_floatingLabelTextColor="@color/colorPrimary"
+                            app:met_underlineColor="@color/colorPrimary"
+                            app:met_primaryColor="@color/colorPrimary"
+                            app:met_textColorHint="@color/textColorPrimary"
+                            app:met_errorColor="@color/colorPrimaryDark"/>
+
+                        <com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner
+                            android:id="@+id/spinner_first_destination"
+                            android:layout_below="@id/spinner_office"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/prompt_first_destination"
+                            app:met_floatingLabel="normal"
+                            app:met_floatingLabelTextColor="@color/colorPrimary"
+                            app:met_underlineColor="@color/colorPrimary"
+                            app:met_primaryColor="@color/colorPrimary"
+                            app:met_textColorHint="@color/textColorPrimary"
+                            app:met_errorColor="@color/colorPrimaryDark"/>
+
+                        <com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner
+                            android:id="@+id/spinner_second_destination"
+                            android:layout_below="@id/spinner_first_destination"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/prompt_second_destination"
+                            app:met_floatingLabel="normal"
+                            app:met_floatingLabelTextColor="@color/colorPrimary"
+                            app:met_underlineColor="@color/colorPrimary"
+                            app:met_primaryColor="@color/colorPrimary"
+                            app:met_textColorHint="@color/textColorPrimary"
+                            app:met_errorColor="@color/colorPrimaryDark"/>
+
+                        <CheckBox
+                            android:id="@+id/checkbox_empty"
+                            android:layout_below="@id/spinner_second_destination"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/prompt_empty"
+                            android:textSize="16dip"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <Button
+                            android:id="@+id/turn_send_button"
+                            android:layout_below="@id/checkbox_empty"
+                            android:theme="@style/PrimaryButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/action_turn_in"
+                            android:onClick="turnValidate"/>
+                    </RelativeLayout>
+                </android.support.v7.widget.CardView>
+            </LinearLayout>
+
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+
+</RelativeLayout>

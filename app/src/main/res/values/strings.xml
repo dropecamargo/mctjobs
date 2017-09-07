@@ -1,0 +1,124 @@
+<resources>
+    <string name="app_name">Mct</string>
+    <string name="app_def_name">Logística y Transporte</string>
+
+    <string name="exit">Salir</string>
+    <string name="cancel">Cancelar</string>
+    <string name="settings">Ajustes</string>
+    <string name="accept">Aceptar</string>
+    <string name="logout">Cerrar sesión</string>
+
+    <string name="tab_scheduled">Programados</string>
+    <string name="tab_attending">Atendiendo</string>
+    <string name="tab_finished">Terminados</string>
+
+    <string name="action_cancel">Rechazar</string>
+    <string name="action_accept">Aceptar</string>
+    <string name="action_search">Buscar</string>
+    <string name="action_pause">Pausar</string>
+    <string name="action_unpause">Despausar</string>
+    <string name="action_ignore">Ignorar</string>
+    <string name="action_report">Novedad</string>
+    <string name="action_refresh">Actualizar</string>
+    <string name="action_step">Reportar</string>
+    <string name="action_panic">Pánico</string>
+    <string name="action_call">Llamada</string>
+    <string name="action_instructions">Instrucciones</string>
+    <string name="action_turn">Enturnamiento</string>
+    <string name="action_image">Agregar imágenes</string>
+    <string name="action_gps_title">Geolocalización desactivada</string>
+    <string name="action_gps_message">Mct necesita acceso a tu ubicación. Activa los servicios de geolocalización.</string>
+
+    <!-- Jobs -->
+    <string name="job_cancel_title">Cancelar trabajo</string>
+    <string name="job_cancel_message">¿Estas seguro de cancelar este trabajo, una vez cancelado este trabajo no podrás recuperarlo?</string>
+    <string name="job_pause_title">Pausar trabajo</string>
+    <string name="job_pause_message">¿Estas seguro de pausar este trabajo?</string>
+    <string name="job_unpause_title">Despausar trabajo</string>
+    <string name="job_unpause_message">¿Estas seguro de continuar este trabajo?</string>
+
+    <string name="job_start_title">Aceptar trabajo</string>
+    <string name="job_start_message">¿Estas seguro de aceptar este trabajo?</string>
+    <string name="job_report_title">Reportar novedad</string>
+
+    <string name="job_accept">¡Trabajo aceptado!</string>
+    <string name="job_finish">¡Trabajo finalizado!</string>
+    <string name="step_report">¡Tarea reportada!</string>
+    <string name="step_send_report">¡Novedad reportada!</string>
+    <string name="step_ignore">Ignorada</string>
+    <string name="step_paused">¡Tarea actualmente PAUSADA!</string>
+    <string name="text_required">Por favor ingrese observación.</string>
+    <string name="photo_required">Por favor ingrese al menos una imagen.</string>
+
+    <string name="text_cancel">Va a RECHAZAR el trabajo</string>
+    <string name="text_pause">Va a PAUSAR la tarea</string>
+    <string name="text_unpause">Va a CONTINUAR la tarea</string>
+    <string name="text_ignore">Va a OMITIR la tarea</string>
+    <string name="text_report">Reportar novedad</string>
+
+    <string name="panic_title">Enviar pánico</string>
+    <string name="panic_message">¿Estas seguro de enviar pánico?</string>
+    <string name="panic_successful">¡Panico enviado!</string>
+    <string name="call_title">Solicitar llamada</string>
+    <string name="call_message">¿Estas seguro de solicitar llamada?</string>
+    <string name="call_successful">¡Llamada solicitada, en un momento estaremos en contacto!</string>
+    <string name="instructions_title">Solicitar instrucciones</string>
+    <string name="instructions_message">¿Estas seguro de solicitar instrucciones?</string>
+    <string name="instructions_successful">¡Instrucciones solicitadas, en un momento estaremos en contacto!</string>
+
+    <!-- Exceptions -->
+    <string name="on_failure_sync_jobs">Ocurrió un error, por favor vuelva a intentarlo.</string>
+    <string name="on_failure">Ocurrió un error, por favor vuelva a intentarlo.</string>
+    <string name="on_null_pointer_exception">Ups&#8230; Al parecer ocurrio un error, por favor vuelva a intentarlo.</string>
+    <string name="on_null_server_exception">TimeoutException, No hay respuesta del servidor (response body is null).</string>
+    <string name="on_null_server_twilio_exception">TimeoutException Twilio, No hay respuesta del servidor (response body is null).</string>
+    <string name="on_host_exception">La conexión con los servidores de MCT ha fallado. Revisa conexión de red o vuelve a intentarlo más tarde.</string>
+    <string name="on_failure_offices">Ocurrió un error recuperando oficinas, por favor vuelva a intentarlo o comuníquese con el administrador.</string>
+    <string name="state_undefined">Estado de trabajo no identificado, por favor vuelva a intentarlo.</string>
+    <string name="action_undefined">Acción no identificada, por favor vuelva a intentarlo.</string>
+
+    <!-- Camera -->
+    <string name="gallery_title">Galería</string>
+    <string name="msg_camera_error_file">Se produjo un error al crear imagen.</string>
+    <string name="msg_gallery_error_file">Se produjo un error alegir imagen de galeria.</string>
+    <string name="desc_image">Image original</string>
+    <string name="msg_image_could_decoded">Los datos de la imagen no pueden ser decodificados, por favor vuelva a intentarlo.</string>
+    <string name="selected_image">Imágenes seleccionadas</string>
+    <string name="no_image">No hay imágenes</string>
+    <string name="gallery_name">Mct</string>
+
+    <!-- Strings related to terms -->
+    <string name="action_terms_accept">Aceptar y continuar</string>
+    <string name="text_welcome_terms">Bienvenido a MCT Móvil</string>
+
+    <!-- Strings related to turn -->
+    <string name="prompt_office">Ciudad</string>
+    <string name="prompt_first_destination">Destino uno</string>
+    <string name="prompt_second_destination">Destino dos</string>
+    <string name="prompt_empty">¿Está Vacío?</string>
+    <string name="action_turn_in">Enturnar</string>
+
+    <!-- Strings related to login -->
+    <string name="title_activity_login">Iniciar sesión</string>
+    <string name="prompt_email">Cuenta de usuario</string>
+    <string name="prompt_password">Contraseña</string>
+    <string name="prompt_phone">Número de teléfono</string>
+    <string name="prompt_phone_confirm">Código de verificación</string>
+    <string name="action_sign_in">Iniciar sesión</string>
+    <string name="action_phone_sign_in">Continuar</string>
+    <string name="action_phone_sign_in_back">Solicitar un nuevo código</string>
+    <string name="info_phone_sign_in">MCT enviará un único mensaje SMS para verificar tu número de teléfono. Es posible que tu proveedor te cobre por dicho mensaje.</string>
+    <string name="info_phone_confirm">Para verificar tu número de teléfono por favor introduce el código.</string>
+    <string name="action_sign_in_short">Iniciar sesión</string>
+    <string name="error_invalid_email">Esta cuenta de usuario no es válida</string>
+    <string name="error_invalid_phone">Número de teléfono no es válido</string>
+    <string name="error_invalid_phone_code">Código de verificación no es válido</string>
+    <string name="error_invalid_password">Esta contraseña es demasiado corta</string>
+    <string name="error_incorrect_password">Esta contraseña es incorrecta</string>
+    <string name="error_field_required">Este campo es requerido</string>
+    <string name="error_field_other_destination">Por favor seleccione destino diferente</string>
+
+    <string name="nav_others_title">Otros</string>
+    <string name="nav_item_turn">Enturnamiento</string>
+    <string name="title_activity_terms">TermsActivity</string>
+</resources>

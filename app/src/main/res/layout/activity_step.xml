@@ -1,0 +1,265 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:background="@color/colorPrimaryDark"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:fab="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorAccent">
+
+            <RelativeLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorAccent">
+
+                <TextView
+                    android:id="@+id/info_step"
+                    android:background="@color/info"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:textSize="15dp"
+                    android:padding="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:gravity="center"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/id"
+                    android:textSize="15dp"
+                    android:padding="5dp"
+                    android:textStyle="bold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/info_step"
+                    android:textColor="@color/textColorPrimary" />
+
+                <TextView
+                    android:id="@+id/formatdate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:layout_below="@+id/info_step"
+                    android:layout_alignParentRight="true" />
+
+                <TextView
+                    android:id="@+id/details"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/formatdate"
+                    android:padding="5dp"
+                    android:textColor="@color/textColorPrimary"/>
+
+                <TextView
+                    android:id="@+id/title_step"
+                    android:background="@color/teal"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:textSize="15dp"
+                    android:layout_marginTop="10dp"
+                    android:padding="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_below="@+id/details"
+                    android:textAllCaps="true"
+                    android:clickable="true"
+                    android:onClick="openMenu"/>
+
+                <TextView
+                    android:id="@+id/message_step"
+                    android:background="@color/teal"
+                    android:textColor="@color/white"
+                    android:textSize="15dp"
+                    android:padding="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_below="@+id/title_step"
+                    android:visibility="gone"
+                    android:onClick="openMenu"/>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:id="@+id/list_steps"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_below="@+id/message_step"
+                    android:scrollbars="none"
+                    android:headerDividersEnabled="true"
+                    android:footerDividersEnabled="true" />
+
+            </RelativeLayout>
+    </ScrollView>
+
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:fab="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/wrapper_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.getbase.floatingactionbutton.FloatingActionsMenu
+            android:id="@+id/actions_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:visibility="gone"
+            fab:fab_addButtonColorNormal="@color/colorPrimary"
+            fab:fab_addButtonColorPressed="@color/colorPrimaryDark"
+            fab:fab_addButtonPlusIconColor="@color/white"
+            fab:fab_labelsPosition="left"
+            fab:fab_labelStyle="@style/menu_labels_style">
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/cancel_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:onClick="cancelStep"
+                fab:fab_icon="@drawable/ic_action_close"
+                fab:fab_size="mini"
+                fab:fab_title="@string/action_cancel"
+                fab:fab_colorNormal="@color/colorPrimary"
+                fab:fab_colorPressed="@color/colorPrimaryDark"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/start_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:onClick="startStep"
+                fab:fab_icon="@drawable/ic_action_check"
+                fab:fab_size="mini"
+                fab:fab_title="@string/action_accept"
+                fab:fab_colorNormal="@color/colorPrimarySuccess"
+                fab:fab_colorPressed="@color/colorPrimaryDarkSuccess"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/ignore_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:onClick="ignoreStep"
+                fab:fab_icon="@drawable/ic_action_ignore"
+                fab:fab_size="mini"
+                fab:fab_title="@string/action_ignore"
+                fab:fab_colorNormal="@color/colorPrimary"
+                fab:fab_colorPressed="@color/colorPrimaryDark"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/pause_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:onClick="pauseStep"
+                fab:fab_icon="@drawable/ic_action_pause"
+                fab:fab_size="mini"
+                fab:fab_title="@string/action_pause"
+                fab:fab_colorNormal="@color/grey"
+                fab:fab_colorPressed="@color/greyDark"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/report_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:onClick="reportStep"
+                fab:fab_icon="@drawable/ic_action_report"
+                fab:fab_size="mini"
+                fab:fab_title="@string/action_report"
+                fab:fab_colorNormal="@color/info"
+                fab:fab_colorPressed="@color/infoDark"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/step_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:onClick="sendStep"
+                fab:fab_icon="@drawable/ic_action_check"
+                fab:fab_size="mini"
+                fab:fab_title="@string/action_step"
+                fab:fab_colorNormal="@color/colorPrimarySuccess"
+                fab:fab_colorPressed="@color/colorPrimaryDarkSuccess"/>
+
+        </com.getbase.floatingactionbutton.FloatingActionsMenu>
+
+        <com.getbase.floatingactionbutton.FloatingActionsMenu
+            android:id="@+id/options_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|left"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="0dp"
+            android:visibility="gone"
+            fab:fab_addButtonColorNormal="@color/grey"
+            fab:fab_addButtonColorPressed="@color/greyDark"
+            fab:fab_addButtonPlusIconColor="@color/white"
+            fab:fab_labelsPosition="right"
+            fab:fab_labelStyle="@style/menu_labels_style">
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/panic_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:onClick="startAction"
+            fab:fab_icon="@drawable/ic_action_panic"
+            fab:fab_size="mini"
+            fab:fab_title="@string/action_panic"
+            fab:fab_colorNormal="@color/colorPrimary"
+            fab:fab_colorPressed="@color/colorPrimaryDark"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/call_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:onClick="startAction"
+            fab:fab_icon="@drawable/ic_action_call"
+            fab:fab_size="mini"
+            fab:fab_title="@string/action_call"
+            fab:fab_colorNormal="@color/colorPrimarySuccess"
+            fab:fab_colorPressed="@color/colorPrimaryDarkSuccess"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/instructions_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:onClick="startAction"
+            fab:fab_icon="@drawable/ic_action_instructions"
+            fab:fab_size="mini"
+            fab:fab_title="@string/action_instructions"
+            fab:fab_colorNormal="@color/info"
+            fab:fab_colorPressed="@color/infoDark"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/turn_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="visible"
+                android:onClick="turnAction"
+                fab:fab_icon="@drawable/ic_action_turn"
+                fab:fab_size="mini"
+                fab:fab_title="@string/action_turn"
+                fab:fab_colorNormal="@color/blue"
+                fab:fab_colorPressed="@color/blueDark"/>
+
+        </com.getbase.floatingactionbutton.FloatingActionsMenu>
+    </FrameLayout>
+</RelativeLayout>

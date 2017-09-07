@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.koiti.mctjobs.StepActivity">
+
+    <item android:id="@+id/action_pause"
+        android:title="@string/action_pause"/>
+
+    <item android:id="@+id/action_ignore"
+        android:title="@string/action_ignore"/>
+
+    <item android:id="@+id/action_report"
+        android:title="@string/action_report"/>
+</menu>

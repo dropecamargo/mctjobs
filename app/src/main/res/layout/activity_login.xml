@@ -1,0 +1,179 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.koiti.mctjobs.LoginActivity">
+
+    <!-- Login progress -->
+    <ProgressBar
+        android:id="@+id/login_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <ScrollView
+        android:id="@+id/login_form"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin">
+
+            <TextView
+                android:id="@+id/etiqueta_opciones_pago"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:text="Opciones de ingreso:"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <RadioGroup
+                android:id="@+id/login_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/login_type"
+                android:orientation="horizontal"
+                android:layout_marginBottom="@dimen/activity_vertical_margin">
+
+                <RadioButton
+                    android:id="@+id/type_internal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="16dp"
+                    android:checked="true"
+                    android:text="Interno"
+                    android:onClick="typeLogin"/>
+
+                <RadioButton
+                    android:id="@+id/type_external"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:text="Externo"
+                    android:onClick="typeLogin"/>
+            </RadioGroup>
+
+            <LinearLayout
+                android:id="@+id/account_login_form"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+                    <AutoCompleteTextView
+                        android:id="@+id/account"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/prompt_email"
+                        android:inputType="textAutoComplete"
+                        android:imeActionId="@+id/password"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                    <EditText
+                        android:id="@+id/password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/prompt_password"
+                        android:imeActionId="@+id/login"
+                        android:imeActionLabel="@string/action_sign_in_short"
+                        android:imeOptions="actionUnspecified"
+                        android:inputType="textPassword"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                    <Button
+                        android:id="@+id/sign_in_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/action_sign_in"
+                        android:theme="@style/PrimaryButton" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/phone_login_form"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/phone_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16dp"
+                    android:text="@string/info_phone_sign_in"/>
+
+                <EditText
+                    android:id="@+id/phone"
+                    android:layout_height="wrap_content"
+                    android:layout_width="fill_parent"
+                    android:inputType="phone"
+                    android:hint="@string/prompt_phone"/>
+
+                <Button
+                    android:id="@+id/sign_in_button_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/action_phone_sign_in"
+                    android:theme="@style/PrimaryButton" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/phone_login_confirm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/phone_confirm_message"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16dp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/phone_confirm_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16dp"
+                    android:text="@string/info_phone_confirm"/>
+
+                <EditText
+                    android:id="@+id/phone_code_confirm"
+                    android:layout_height="wrap_content"
+                    android:layout_width="fill_parent"
+                    android:inputType="number"
+                    android:hint="@string/prompt_phone_confirm"/>
+
+                <Button
+                    android:id="@+id/sign_in_button_phone_confirm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/action_phone_sign_in"
+                    android:theme="@style/PrimaryButton" />
+
+                <Button
+                    android:id="@+id/sign_in_button_phone_back"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:theme="@style/PrimaryButton"
+                    android:text="@string/action_phone_sign_in_back"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
