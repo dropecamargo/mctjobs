@@ -104,7 +104,7 @@ public class MainActivity extends ActionBarActivity implements NavigationView.On
         TabLayout tabLayout = (TabLayout)findViewById(R.id.tablayout);
         tabLayout.setupWithViewPager(viewPager);
 
-        System.out.println("push");
+        System.out.println("push....");
     }
 
     @Override
