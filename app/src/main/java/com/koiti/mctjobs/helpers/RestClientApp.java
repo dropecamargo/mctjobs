@@ -171,4 +171,19 @@ public class RestClientApp {
         client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
         client.post(null, Constants.URL_TURN_ON_API, entity, "application/json", jsonHttpResponseHandler);
     }
+
+    public void termsOn(Integer partner, String fecha, JSONObject oaut, JsonHttpResponseHandler jsonHttpResponseHandler) throws UnsupportedEncodingException, JSONException {
+        // Params
+        JSONObject params = new JSONObject();
+        params.put("tercero_codigo", partner);
+        params.put("fecha", fecha);
+
+        ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
+
+        // Call API Login
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.addHeader("Authorization", "Bearer " + oaut.getString("access_token"));
+        client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
+        client.post(null, Constants.URL_TERMS_ON_API, entity, "application/json", jsonHttpResponseHandler);
+    }
 }

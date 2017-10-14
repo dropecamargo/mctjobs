@@ -20,6 +20,7 @@ public class UserSessionManager {
 
     private static final String PREFER_NAME = "MCTUserPreferences";
     private static final String IS_USER_LOGIN = "IsUserLoggedIn";
+    private static final String IS_USER_TERMS = "IsUserAcceptTerms";
 
     public static final String KEY_PARTNER = "id_partner";
     public static final String KEY_NAME = "name";
@@ -37,6 +38,7 @@ public class UserSessionManager {
     public void startSession(Integer partner, String name, String rol, String photo, String phone) {
         // Storing login value as TRUE
         editor.putBoolean(IS_USER_LOGIN, true);
+        editor.putBoolean(IS_USER_TERMS, false);
 
         editor.putString(KEY_NAME, name);
         editor.putInt(KEY_PARTNER, partner);
@@ -94,6 +96,15 @@ public class UserSessionManager {
         return false;
     }
 
+    public boolean getTerms() {
+        return pref.getBoolean(IS_USER_TERMS, false);
+    }
+
+    public void setTerms(Boolean terms) {
+        editor.putBoolean(IS_USER_TERMS, terms);
+        editor.commit();
+    }
+
     public boolean isUserLoggedIn() {
         return pref.getBoolean(IS_USER_LOGIN, false);
     }
@@ -108,5 +119,9 @@ public class UserSessionManager {
 
     public String getImage() {
         return pref.getString(KEY_PHOTO, "");
+    }
+
+    public String getRol() {
+        return pref.getString(KEY_ROL, "");
     }
 }

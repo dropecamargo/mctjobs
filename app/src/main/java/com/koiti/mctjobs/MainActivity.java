@@ -2,14 +2,11 @@ package com.koiti.mctjobs;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
@@ -17,8 +14,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
 
 import com.koiti.mctjobs.fragments.AttendingFragment;
 import com.koiti.mctjobs.fragments.FinishedFragment;
@@ -26,22 +21,16 @@ import com.koiti.mctjobs.fragments.JobsFragment;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.GPSTracker;
 import com.koiti.mctjobs.helpers.UserSessionManager;
-import com.koiti.mctjobs.models.Image;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.models.Step;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
 
-import de.hdodenhof.circleimageview.CircleImageView;
-
-public class MainActivity extends ActionBarActivity implements NavigationView.OnNavigationItemSelectedListener, SearchView.OnQueryTextListener {
+public class MainActivity extends ActionBarActivity implements SearchView.OnQueryTextListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private DataBaseManagerJob mJob;
     private UserSessionManager mSession;
     private GPSTracker gps;
-
-    private DrawerLayout mDrawerLayout;
-    private NavigationView navigationView;
 
     private PagerAdapter mAdapter;
     private ActionBar actionBar;
@@ -55,10 +44,6 @@ public class MainActivity extends ActionBarActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Terms
-        // Intent intent = new Intent(this, TermsActivity.class);
-        // startActivity(intent);
 
         // Session
         mSession = new UserSessionManager(this);
@@ -74,19 +59,6 @@ public class MainActivity extends ActionBarActivity implements NavigationView.On
         attendingFragment = new AttendingFragment();
         finishedFragment = new FinishedFragment();
 
-        // Drawer layout
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        // Header
-        View headerView =  navigationView.getHeaderView(0);
-        TextView nav_username = (TextView) headerView.findViewById(R.id.nav_name);
-        nav_username.setText(mSession.getName());
-
-        CircleImageView nav_image = (CircleImageView) headerView.findViewById(R.id.nav_image);
-        nav_image.setImageBitmap(Image.decodeBase64(mSession.getImage()));
-
         // Set up the action bar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -94,7 +66,6 @@ public class MainActivity extends ActionBarActivity implements NavigationView.On
         actionBar = getSupportActionBar();
         actionBar.setTitle(R.string.app_name);
         actionBar.setSubtitle(R.string.app_def_name);
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_action_menu);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         // Pager
@@ -120,35 +91,12 @@ public class MainActivity extends ActionBarActivity implements NavigationView.On
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here
         switch (item.getItemId()) {
             case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
+                onBackPressed();
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        switch (item.getItemId()) {
-            case R.id.nav_item_turn:
-                turnAction();
-                break;
-
-            case R.id.nav_item_close:
-                finish();
-                break;
-
-            case R.id.nav_item_logout:
-                mSession.logout();
-                finish();
-                break;
-        }
-        //close navigation drawer
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        return true;
     }
 
     @Override

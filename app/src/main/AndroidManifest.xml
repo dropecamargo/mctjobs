@@ -21,8 +21,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:supportsRtl="true">
 
         <!-- Register AnalyticsReceiver and AnalyticsService to support background dispatching on non-Google Play devices. -->
         <receiver
@@ -59,36 +58,44 @@
             android:enabled="true"
             android:exported="false" />
 
+        <!-- Activitys -->
         <activity
             android:name=".MainActivity"
             android:configChanges="screenSize|orientation"
-            android:theme="@style/MainTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:theme="@style/MainTheme" />
         <activity
             android:name=".StepActivity"
-            android:configChanges="screenSize|orientation" />
+            android:configChanges="screenSize|orientation"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".ReportActivity"
-            android:configChanges="screenSize|orientation" />
+            android:configChanges="screenSize|orientation"
+            android:theme="@style/AppTheme"/>
         <activity
             android:name=".LoginActivity"
-            android:configChanges="screenSize|orientation" />
+            android:configChanges="screenSize|orientation"
+            android:theme="@style/LoginTheme"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan" />
         <activity
             android:name=".TurnActivity"
-            android:configChanges="screenSize|orientation" />
+            android:configChanges="screenSize|orientation"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".TermsActivity"
-            android:theme="@style/TermsTheme"
-            android:configChanges="screenSize|orientation" />
+            android:configChanges="screenSize|orientation"
+            android:theme="@style/LoginTheme" />
         <activity
             android:name="com.gun0912.tedpicker.ImagePickerActivity"
             android:screenOrientation="portrait"
             android:theme="@style/ImagesTheme" />
+        <activity
+            android:name=".HomeActivity"
+            android:configChanges="screenSize|orientation"
+            android:theme="@style/MainTheme" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
-
 </manifest>

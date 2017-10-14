@@ -28,7 +28,7 @@ public class Utils {
     }
 
     public static Spanned fromHtml(String s) {
-        return Html.fromHtml(s.toString());
+        return Html.fromHtml(s.trim().toString());
     }
 
     public static void showProgress(final boolean show, final View mFormView, final View mProgressView) {

@@ -49,4 +49,10 @@ dependencies {
     compile 'com.github.ParkSangGwon:TedPicker:v1.0.10'
 }
 
+dependencies {
+    compile 'com.android.support:support-v4:23.+'
+}
+dependencies {
+    compile 'com.android.support:support-v4:23.+'
+}
 apply plugin: 'com.google.gms.google-services'

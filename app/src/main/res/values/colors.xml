@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#F44336</color>
-    <color name="colorPrimaryDark">#D32F2F</color>
+    <color name="colorPrimary">#000000</color>
+    <color name="colorPrimaryDark">#444444</color>
+
+    <color name="colorPrimaryInternal">#F44336</color>
+    <color name="colorPrimaryInternalDark">#D32F2F</color>
+
+    <color name="colorButtonNormal">#C7252B</color>
+    <color name="colorButtonPressed">#8E0018</color>
+
+    <color name="colorButtonHomeNormal">#E6B54A</color>
+    <color name="colorButtonHomePressed">#DB9600</color>
+
+    <color name="colorButtonHomeJobsNormal">#96C2B6</color>
+    <color name="colorButtonHomeJobsPressed">#6B9687</color>
+
     <color name="colorAccent">#FFFFFF</color>
     <color name="textColorPrimary">#444444</color>
 
@@ -21,6 +34,11 @@
     <color name="greyLight">#E8E8E8</color>
     <color name="greybg">#E0E0E0</color>
 
+    <color name="colorSuccessMessage">#A3BD31</color>
+    <color name="colorErrorMessage">#C7252B</color>
+
     <color name="blackTransparent">#B2000000</color>
     <color name="primaryTransparent">#B2FFFFFF</color>
+    <color name="greyTransparent">#80FFFFFF</color>
+    <color name="blueLink">#07C</color>
 </resources>

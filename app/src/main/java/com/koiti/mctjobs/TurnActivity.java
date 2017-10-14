@@ -1,6 +1,10 @@
 package com.koiti.mctjobs;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.system.ErrnoException;
 import android.text.Editable;
@@ -10,11 +14,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.koiti.mctjobs.fragments.MessageFragment;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.GPSTracker;
 import com.koiti.mctjobs.helpers.RestClientApp;
@@ -22,6 +29,9 @@ import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.helpers.Utils;
 import com.koiti.mctjobs.models.Office;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner;
 
 import org.json.JSONArray;
@@ -53,8 +63,18 @@ public class TurnActivity extends ActionBarActivity {
     private View mTurnFormView;
     private View mProgressView;
 
-    private TextView turn_info_text;
+    // Layout vehicle
+    private LinearLayout mLayoutVehicle;
+    private ImageView mTurnVehicle;
     private TextView turn_info_vehicle;
+    private TextView turn_placa_vehicle;
+
+    // Layout info
+    private LinearLayout mLayoutInfo;
+    private ImageView mTurnCity;
+    private TextView turn_info_title;
+    private TextView turn_info_body;
+
     private MaterialBetterSpinner spinner_office;
     private MaterialBetterSpinner spinner_first_destination;
     private MaterialBetterSpinner spinner_second_destination;
@@ -63,6 +83,9 @@ public class TurnActivity extends ActionBarActivity {
     private ArrayList<Office> officesList = new ArrayList<Office>();
     private ArrayList<Office> destinationsListOne = new ArrayList<Office>();
     private ArrayList<Office> destinationsListTwo = new ArrayList<Office>();
+
+    // Layout message
+    private LinearLayout mLayoutMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,12 +115,28 @@ public class TurnActivity extends ActionBarActivity {
         mFormView = findViewById(R.id.form_view);
         mTurnFormView = findViewById(R.id.turn_form);
         mProgressView = findViewById(R.id.progress_view);
+
+        // Layout vehicle
+        mLayoutVehicle = (LinearLayout) findViewById(R.id.layout_vehicle);
+        mTurnVehicle = (ImageView) findViewById(R.id.turn_icon_vehicle);
+
+        // Layout info
+        mLayoutInfo = (LinearLayout) findViewById(R.id.layout_info);
+        mTurnCity = (ImageView) findViewById(R.id.turn_logo_city);
+        turn_info_title = (TextView) findViewById(R.id.turn_info_title);
+        turn_info_body = (TextView) findViewById(R.id.turn_info_body);
+
         turn_info_vehicle = (TextView) findViewById(R.id.turn_info_vehicle);
-        turn_info_text = (TextView) findViewById(R.id.turn_info_text);
+        turn_placa_vehicle = (TextView) findViewById(R.id.turn_placa_vehicle);
+
+        // Layout form
         spinner_office = (MaterialBetterSpinner) findViewById(R.id.spinner_office);
         spinner_first_destination = (MaterialBetterSpinner) findViewById(R.id.spinner_first_destination);
         spinner_second_destination = (MaterialBetterSpinner) findViewById(R.id.spinner_second_destination);
         checkbox_empty = (CheckBox) findViewById(R.id.checkbox_empty);
+
+        // Layout message
+        mLayoutMessage = (LinearLayout) findViewById(R.id.layout_message);
 
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
@@ -106,6 +145,25 @@ public class TurnActivity extends ActionBarActivity {
         // Toolbar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle( getResources().getString(R.string.action_turn) );
+
+        // Layout vehicle
+        // Load image placa
+        ImageLoader loaderVehiclePlaca = ImageLoader.getInstance();
+        DisplayImageOptions optionsVehiclePlaca = new DisplayImageOptions.Builder().cacheInMemory(true)
+                .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+        loaderVehiclePlaca.loadImage("drawable://" + R.drawable.turn_placa_icon, null, optionsVehiclePlaca, new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                BitmapDrawable drawable = new BitmapDrawable(getResources(), loadedImage);
+                mLayoutVehicle.setBackgroundDrawable(drawable);
+            }
+        });
+
+        // Load image vehicle
+        ImageLoader loaderVehicle = ImageLoader.getInstance();
+        DisplayImageOptions optionsVehicle = new DisplayImageOptions.Builder().cacheInMemory(true)
+                .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+        loaderVehicle.displayImage("drawable://" + R.drawable.turn_red_car, mTurnVehicle, optionsVehicle);
 
         // Start turn
         startTurn();
@@ -116,6 +174,7 @@ public class TurnActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
+//                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -193,86 +252,110 @@ public class TurnActivity extends ActionBarActivity {
 
             // Data form
             JSONObject data = response.getJSONObject("data");
-            JSONObject terms = data.getJSONObject("condiciones");
+            Boolean sucessfull = response.getBoolean("sucessfull");
 
             // Vehicle
-            String vehicle = data.getString("vehiculo");
-            turn_info_vehicle.setText( Utils.fromHtml(vehicle) );
+            JSONObject datavehicle = data.getJSONObject("datavehicle");
+            String placa = datavehicle.getString("placa");
+            String clase = datavehicle.getString("clase");
+
+            turn_placa_vehicle.setText( placa );
+            turn_info_vehicle.setText( clase );
 
             // Message
-            String message = data.getString("mensaje");
-            turn_info_text.setText( Utils.fromHtml(message) );
+            JSONObject fracmensaje = data.getJSONObject("fracmensaje");
+            String title = fracmensaje.getString("title");
+            String body = fracmensaje.getString("body");
 
+            // Evaluate turn
             Boolean turn = data.getBoolean("enturnar");
             if(turn) {
-                mTurnFormView.setVisibility(View.VISIBLE);
+                // Layout info
+                ImageLoader loaderCity = ImageLoader.getInstance();
+                DisplayImageOptions optionsLogo = new DisplayImageOptions.Builder().cacheInMemory(true)
+                        .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+                loaderCity.displayImage("drawable://" + R.drawable.turn_city_icon, mTurnCity, optionsLogo);
 
-                if(turn != null) {
-                    JSONObject basicData = data.getJSONObject("basicData");
-                    JSONArray offices = basicData.getJSONArray("Offices");
-                    JSONArray destinations = basicData.getJSONArray("Destinos");
+                // Show layout info
+                turn_info_title.setText( title );
+                turn_info_body.setText( Utils.fromHtml(body.toString()) );
+                mLayoutInfo.setVisibility(View.VISIBLE);
 
-                    if(offices == null || offices.length() == 0) {
-                        Toast.makeText(TurnActivity.this, R.string.on_failure_offices, Toast.LENGTH_LONG).show();
-                        finish();
+                // Layout form
+                JSONObject basicData = data.getJSONObject("basicData");
+                JSONArray offices = basicData.getJSONArray("Offices");
+                JSONArray destinations = basicData.getJSONArray("Destinos");
+
+                if(offices == null || offices.length() == 0) {
+                    Toast.makeText(TurnActivity.this, R.string.on_failure_offices, Toast.LENGTH_LONG).show();
+                    finish();
+                    return;
+                }
+
+                // Set offices
+                for (int i = 0; i < offices.length(); i++) {
+                    JSONObject jsonObject = (JSONObject) offices.get(i);
+                    officesList.add( new Office(jsonObject.getInt("id"), jsonObject.getString("nombre")) );
+                }
+                ArrayAdapter<Office> officesAdapter = new ArrayAdapter<Office>(this, android.R.layout.simple_list_item_1, officesList);
+                spinner_office.setAdapter(officesAdapter);
+
+                // Set destinations
+                for (int i = 0; i < destinations.length(); i++) {
+                    JSONObject jsonObject = (JSONObject) destinations.get(i);
+                    Office one_office = new Office(jsonObject.getInt("id"), jsonObject.getString("nombre"));
+                    destinationsListOne.add(one_office);
+
+                    // Any destination not available in second spinner
+                    if (one_office.getId() != Constants.TURN_ANY_DESTINATION) {
+                        destinationsListTwo.add(one_office);
+                    }
+                }
+                final ArrayAdapter<Office> destinationsAdapterOne = new ArrayAdapter<Office>(this, android.R.layout.simple_list_item_1, destinationsListOne);
+                final ArrayAdapter<Office> destinationsAdapterTwo = new ArrayAdapter<Office>(this, android.R.layout.simple_list_item_1, destinationsListTwo);
+                spinner_first_destination.setAdapter(destinationsAdapterOne);
+                spinner_second_destination.setAdapter(destinationsAdapterTwo);
+
+                // Listeners
+                spinner_first_destination.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                         return;
                     }
 
-                    // Set offices
-                    for (int i = 0; i < offices.length(); i++) {
-                        JSONObject jsonObject = (JSONObject) offices.get(i);
-                        officesList.add( new Office(jsonObject.getInt("id"), jsonObject.getString("nombre")) );
-                    }
-                    ArrayAdapter<Office> officesAdapter = new ArrayAdapter<Office>(this, android.R.layout.simple_list_item_1, officesList);
-                    spinner_office.setAdapter(officesAdapter);
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        if(s != null && !s.toString().isEmpty()) {
+                            Office first_destination = Office.filter(destinationsListOne, s.toString());
+                            if (first_destination == null) {
+                                spinner_first_destination.setText("");
+                                Toast.makeText(TurnActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
+                                return;
+                            }
 
-                    // Set destinations
-                    for (int i = 0; i < destinations.length(); i++) {
-                        JSONObject jsonObject = (JSONObject) destinations.get(i);
-                        Office one_office = new Office(jsonObject.getInt("id"), jsonObject.getString("nombre"));
-                        destinationsListOne.add(one_office);
-
-                        // Any destination not available in second spinner
-                        if (one_office.getId() != Constants.TURN_ANY_DESTINATION) {
-                            destinationsListTwo.add(one_office);
-                        }
-                    }
-                    final ArrayAdapter<Office> destinationsAdapterOne = new ArrayAdapter<Office>(this, android.R.layout.simple_list_item_1, destinationsListOne);
-                    final ArrayAdapter<Office> destinationsAdapterTwo = new ArrayAdapter<Office>(this, android.R.layout.simple_list_item_1, destinationsListTwo);
-                    spinner_first_destination.setAdapter(destinationsAdapterOne);
-                    spinner_second_destination.setAdapter(destinationsAdapterTwo);
-
-                    // Listeners
-                    spinner_first_destination.addTextChangedListener(new TextWatcher() {
-                        @Override
-                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                            return;
-                        }
-
-                        @Override
-                        public void onTextChanged(CharSequence s, int start, int before, int count) {
-                            if(s != null && !s.toString().isEmpty()) {
-                                Office first_destination = Office.filter(destinationsListOne, s.toString());
-                                if (first_destination == null) {
-                                    spinner_first_destination.setText("");
-                                    Toast.makeText(TurnActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
-                                    return;
-                                }
-
-                                if(first_destination.getId() == Constants.TURN_ANY_DESTINATION) {
-                                    spinner_second_destination.setVisibility(View.GONE);
-                                }else{
-                                    spinner_second_destination.setVisibility(View.VISIBLE);
-                                }
+                            if(first_destination.getId() == Constants.TURN_ANY_DESTINATION) {
+                                spinner_second_destination.setVisibility(View.GONE);
+                            }else{
+                                spinner_second_destination.setVisibility(View.VISIBLE);
                             }
                         }
+                    }
 
-                        @Override
-                        public void afterTextChanged(Editable s) {
-                            return;
-                        }
-                    });
-                }
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        return;
+                    }
+                });
+
+                // Show layout form
+                mTurnFormView.setVisibility(View.VISIBLE);
+
+            }else{
+                // Show message
+                showMessage(sucessfull, title, body);
+
+                // Show layout message
+                mLayoutMessage.setVisibility(View.VISIBLE);
             }
         } catch (JSONException | NullPointerException e ) {
             Log.e(TAG, e.getMessage());
@@ -376,14 +459,24 @@ public class TurnActivity extends ActionBarActivity {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                     try {
+
                         if( response.getBoolean("sucessfull") == true) {
                             JSONObject data = response.getJSONObject("data");
                             JSONObject turn = data.getJSONObject("enturnamiento");
+                            Boolean sucessfull = response.getBoolean("sucessfull");
 
                             // Message
-                            String message = turn.getString("mensaje");
-                            turn_info_text.setText( Utils.fromHtml(message) );
-                            mTurnFormView.setVisibility(View.INVISIBLE);
+                            JSONObject fracmensaje = turn.getJSONObject("fracmensaje");
+                            String title = fracmensaje.getString("title");
+                            String body = fracmensaje.getString("body");
+
+                            // Hide form
+                            mLayoutInfo.setVisibility(View.GONE);
+                            mTurnFormView.setVisibility(View.GONE);
+                            // Show message
+                            showMessage(sucessfull, title, body);
+                            // Show layout message
+                            mLayoutMessage.setVisibility(View.VISIBLE);
                         }
                     } catch (JSONException | NullPointerException e ) {
                         Log.e(TAG, e.getMessage());
@@ -468,6 +561,25 @@ public class TurnActivity extends ActionBarActivity {
         }finally {
             // Hide progress.
             Utils.showProgress(false, mFormView, mProgressView);
+        }
+    }
+
+    public void showMessage(Boolean sucessfull, String title, String body)
+    {
+        // Parameters
+        Bundle messageParameters = new Bundle();
+        messageParameters.putBoolean(Constants.MESSAGE_SUCCESS, sucessfull);
+        messageParameters.putString(Constants.MESSAGE_TITLE, title);
+        messageParameters.putString(Constants.MESSAGE_BODY, body);
+
+        if (!isFinishing()) {
+            // Inflate message
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            MessageFragment messageFragment = new MessageFragment();
+            messageFragment.setArguments(messageParameters);
+            fragmentTransaction.add(R.id.layout_message, messageFragment, TurnActivity.TAG);
+            fragmentTransaction.commit();
         }
     }
 }

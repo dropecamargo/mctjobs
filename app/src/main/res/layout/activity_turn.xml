@@ -1,10 +1,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/greybg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/greyLight">
 
     <!-- Login progress -->
     <ProgressBar
@@ -12,8 +12,7 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 
     <android.support.v4.widget.NestedScrollView
         android:id="@+id/form_view"
@@ -24,64 +23,143 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:paddingTop="8dp">
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="15dp">
 
             <LinearLayout
-                android:id="@+id/turn_vehicle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="8dp"
+                android:paddingBottom="15dp"
                 android:orientation="vertical">
-
                 <android.support.v7.widget.CardView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:id="@+id/turn_info_vehicle"
+                    android:layout_height="80dp">
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:textColor="@color/textColorPrimary"
-                        android:textIsSelectable="true"
-                        android:padding="8dp"
-                        android:textSize="16dp"/>
+                        android:layout_gravity="center|center_vertical"
+                        android:paddingLeft="15dp">
+
+                        <ImageView
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/turn_icon_vehicle"
+                            android:layout_gravity="center_vertical" />
+
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/layout_vehicle"
+                            android:weightSum="1"
+                            android:layout_marginLeft="15dp">
+
+                            <TextView
+                                android:id="@+id/turn_placa_vehicle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="bottom"
+                                android:textAlignment="center"
+                                android:layout_weight="0.44"
+                                android:gravity="bottom"
+                                android:textSize="30dp"
+                                android:textStyle="bold"
+                                android:textColor="@color/colorPrimary"
+                                android:paddingTop="10dp" />
+
+                            <TextView
+                                android:id="@+id/turn_info_vehicle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textAlignment="center"
+                                android:layout_weight="0.39"
+                                android:gravity="bottom"
+                                android:textColor="@color/textColorPrimary"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
                 </android.support.v7.widget.CardView>
             </LinearLayout>
 
+            <!-- Info turn -->
             <LinearLayout
-                android:id="@+id/turn_info"
+                android:id="@+id/layout_info"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="8dp"
-                android:orientation="vertical">
-
+                android:layout_marginBottom="15dp"
+                android:orientation="vertical"
+                android:visibility="gone">
                 <android.support.v7.widget.CardView
+                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:id="@+id/turn_info_text"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:minHeight="85dp"
+                    card_view:cardBackgroundColor="@color/colorButtonHomeJobsNormal">
+                    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:textColor="@color/textColorPrimary"
-                        android:textIsSelectable="true"
-                        android:padding="8dp"
-                        android:textSize="16dp"/>
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/turn_logo_city"
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"/>
+
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:paddingLeft="10dp">
+
+                            <TextView
+                                android:id="@+id/turn_info_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:textColor="@color/white"
+                                android:textSize="32sp"
+                                android:layout_gravity="bottom|left" />
+
+                            <TextView
+                                android:id="@+id/turn_info_body"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/white"
+                                android:layout_gravity="top|left"
+                                android:textSize="16sp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
                 </android.support.v7.widget.CardView>
             </LinearLayout>
 
+            <!-- Turn message -->
+            <LinearLayout
+                android:id="@+id/layout_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginBottom="15dp" />
+
+            <!-- Form turn -->
             <LinearLayout
                 android:id="@+id/turn_form"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="10dp">
 
                 <android.support.v7.widget.CardView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="15dp">
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -97,7 +175,7 @@
                             app:met_underlineColor="@color/colorPrimary"
                             app:met_primaryColor="@color/colorPrimary"
                             app:met_textColorHint="@color/textColorPrimary"
-                            app:met_errorColor="@color/colorPrimaryDark"/>
+                            app:met_errorColor="@color/colorErrorMessage"/>
 
                         <com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner
                             android:id="@+id/spinner_first_destination"
@@ -110,7 +188,7 @@
                             app:met_underlineColor="@color/colorPrimary"
                             app:met_primaryColor="@color/colorPrimary"
                             app:met_textColorHint="@color/textColorPrimary"
-                            app:met_errorColor="@color/colorPrimaryDark"/>
+                            app:met_errorColor="@color/colorErrorMessage"/>
 
                         <com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner
                             android:id="@+id/spinner_second_destination"
@@ -123,7 +201,7 @@
                             app:met_underlineColor="@color/colorPrimary"
                             app:met_primaryColor="@color/colorPrimary"
                             app:met_textColorHint="@color/textColorPrimary"
-                            app:met_errorColor="@color/colorPrimaryDark"/>
+                            app:met_errorColor="@color/colorErrorMessage"/>
 
                         <CheckBox
                             android:id="@+id/checkbox_empty"
@@ -134,17 +212,18 @@
                             android:textSize="16dip"
                             android:layout_marginTop="10dp"
                             android:layout_marginBottom="10dp"/>
-
-                        <Button
-                            android:id="@+id/turn_send_button"
-                            android:layout_below="@id/checkbox_empty"
-                            android:theme="@style/PrimaryButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/action_turn_in"
-                            android:onClick="turnValidate"/>
                     </RelativeLayout>
                 </android.support.v7.widget.CardView>
+
+                <Button
+                    android:id="@+id/turn_send_button"
+                    android:layout_below="@id/checkbox_empty"
+                    android:layout_width="match_parent"
+                    android:text="@string/action_turn_in"
+                    android:onClick="turnValidate"
+                    android:layout_height="@dimen/button_general_height"
+                    android:background="@drawable/button_general_corners"
+                    android:textColor="@drawable/button_general_text"/>
             </LinearLayout>
 
         </LinearLayout>

@@ -5,18 +5,21 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.PopupMenu;
 import android.system.ErrnoException;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +30,8 @@ import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.helpers.Utils;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,8 +61,11 @@ public class LoginActivity extends ActionBarActivity {
     private LinearLayout mLoginForm;
     private LinearLayout mLoginPhone;
     private LinearLayout mLoginPhoneConfirm;
-    private RadioButton mInternal;
-    private RadioButton mExternal;
+    private ImageView mLoginBackground;
+    private ImageView mLoginLogo;
+    private ImageView mLoginType;
+    private PopupMenu mPopupMenu;
+
     private AutoCompleteTextView mAccountView;
     private EditText mPasswordView;
     private EditText mPhoneView;
@@ -81,23 +89,47 @@ public class LoginActivity extends ActionBarActivity {
         mRestClientApp = new RestClientApp(this);
 
         // Set up the login form.
+        mLoginBackground = (ImageView) findViewById(R.id.login_background);
+        mLoginLogo = (ImageView) findViewById(R.id.login_logo);
+        mLoginType = (ImageView) findViewById(R.id.login_type);
+
         mLoginForm = (LinearLayout) findViewById(R.id.account_login_form);
         mLoginPhone = (LinearLayout) findViewById(R.id.phone_login_form);
         mLoginPhoneConfirm = (LinearLayout) findViewById(R.id.phone_login_confirm);
-        mInternal = (RadioButton) findViewById(R.id.type_internal);
-        mExternal = (RadioButton) findViewById(R.id.type_external);
         mPhoneConfirmMessage = (TextView) findViewById(R.id.phone_confirm_message);
 
         mPhoneView = (EditText) findViewById(R.id.phone);
         mPhoneCodeView = (EditText) findViewById(R.id.phone_code_confirm);
         mAccountView = (AutoCompleteTextView) findViewById(R.id.account);
         mPasswordView = (EditText) findViewById(R.id.password);
+
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
                     attemptLogin();
-                    return true;
+                }
+                return false;
+            }
+        });
+
+        // actionSend phone
+        mPhoneView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    attemptLoginPhone();
+                }
+                return false;
+            }
+        });
+
+        // actionSend phone
+        mPhoneCodeView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    attemptLoginPhoneConfirm();
                 }
                 return false;
             }
@@ -146,22 +178,43 @@ public class LoginActivity extends ActionBarActivity {
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        // Toolbar
-        getSupportActionBar().setTitle( R.string.title_activity_login );
-        getSupportActionBar().setSubtitle( getResources().getString(R.string.app_name) + " - " + getResources().getString(R.string.app_def_name) );
+        // Load image background
+        ImageLoader loaderBackground = ImageLoader.getInstance();
+        DisplayImageOptions optionsBackground = new DisplayImageOptions.Builder().cacheInMemory(true)
+                .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+        loaderBackground.displayImage("drawable://" + R.drawable.login_background, mLoginBackground, optionsBackground);
+
+        // Load image logo
+        ImageLoader loaderLogo = ImageLoader.getInstance();
+        DisplayImageOptions optionsLogo = new DisplayImageOptions.Builder().cacheInMemory(true)
+                .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+        loaderLogo.displayImage("drawable://" + R.drawable.logo_mtc_white, mLoginLogo, optionsLogo);
+
+        // Popup type menu
+        mPopupMenu = new PopupMenu(LoginActivity.this, mLoginType);
+        MenuInflater menuInflater = mPopupMenu.getMenuInflater();
+        menuInflater.inflate(R.menu.login, mPopupMenu.getMenu());
+        mPopupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.login_internal:
+                        mLoginForm.setVisibility(View.VISIBLE);
+                        mLoginPhone.setVisibility(View.GONE);
+                        mLoginPhoneConfirm.setVisibility(View.GONE);
+                        break;
+                    case R.id.login_external:
+                        mLoginForm.setVisibility(View.GONE);
+                        mLoginPhoneConfirm.setVisibility(View.GONE);
+                        mLoginPhone.setVisibility(View.VISIBLE);
+                        break;
+                }
+                return true;
+            }
+        });
     }
 
     public void typeLogin(View view) {
-        if( mInternal.isChecked() ) {
-            mLoginForm.setVisibility(View.VISIBLE);
-            mLoginPhone.setVisibility(View.GONE);
-            mLoginPhoneConfirm.setVisibility(View.GONE);
-        }else {
-            mLoginForm.setVisibility(View.GONE);
-            mLoginPhone.setVisibility(View.VISIBLE);
-
-            mPhoneView.requestFocus();
-        }
+        mPopupMenu.show();
     }
 
     /**
@@ -215,6 +268,45 @@ public class LoginActivity extends ActionBarActivity {
 
             // Showing Alert Message
             alertDialog.show();
+        }
+    }
+
+    public void sendSmsVerification(String phone, String country_code)
+    {
+        try {
+            mRestClientApp.sendSmsVerification(phone, country_code, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    try
+                    {
+                        if(response == null) {
+                            throw new NullPointerException(getResources().getString(R.string.on_null_server_twilio_exception));
+                        }
+
+                        String message = response.getString("message");
+                        mPhoneConfirmMessage.setText(message);
+
+                        mLoginPhone.setVisibility(View.GONE);
+                        mLoginPhoneConfirm.setVisibility(View.VISIBLE);
+
+                    } catch (JSONException | NullPointerException e ) {
+                        Log.e(TAG, e.getMessage());
+                        Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
+
+                    }finally {
+                        // Hide progress.
+                        Utils.showProgress(false, mLoginFormView, mProgressView);
+                    }
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+                    onFailureTwilio(response);
+                }
+            });
+        } catch (JSONException | UnsupportedEncodingException e ) {
+            Log.e(TAG, e.getMessage());
+            Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -283,45 +375,6 @@ public class LoginActivity extends ActionBarActivity {
                 Log.e(TAG, e.getMessage());
                 Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
             }
-        }
-    }
-
-    public void sendSmsVerification(String phone, String country_code)
-    {
-        try {
-            mRestClientApp.sendSmsVerification(phone, country_code, new JsonHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                    try
-                    {
-                        if(response == null) {
-                            throw new NullPointerException(getResources().getString(R.string.on_null_server_twilio_exception));
-                        }
-
-                        String message = response.getString("message");
-                        mPhoneConfirmMessage.setText(message);
-
-                        mLoginPhone.setVisibility(View.GONE);
-                        mLoginPhoneConfirm.setVisibility(View.VISIBLE);
-
-                    } catch (JSONException | NullPointerException e ) {
-                        Log.e(TAG, e.getMessage());
-                        Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
-
-                    }finally {
-                        // Hide progress.
-                        Utils.showProgress(false, mLoginFormView, mProgressView);
-                    }
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
-                    onFailureTwilio(response);
-                }
-            });
-        } catch (JSONException | UnsupportedEncodingException e ) {
-            Log.e(TAG, e.getMessage());
-            Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -462,8 +515,8 @@ public class LoginActivity extends ActionBarActivity {
                             mSession.startSession(partner.getInt("id_partner"), partner.getString("fullname"), partner.getString("rol"), partner.getString("photo"),
                                     null);
 
-                            // MainActivity
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            // HomeActivity
+                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                             startActivity(intent);
                             finish();
                         }
@@ -529,8 +582,8 @@ public class LoginActivity extends ActionBarActivity {
                             mSession.startSession(partner.getInt("id_partner"), partner.getString("fullname"), partner.getString("rol"), partner.getString("photo"),
                                     phone);
 
-                            // MainActivity
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            // HomeActivity
+                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                             startActivity(intent);
                             finish();
                         }else{

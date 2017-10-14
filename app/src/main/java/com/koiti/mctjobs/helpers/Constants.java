@@ -16,6 +16,8 @@ public class Constants {
 
     public static final String URL_TURN_ON_API = "http://esb.mct.com.co:8280/services/pxcreaEnturnamientoGPS";
 
+    public static final String URL_TERMS_ON_API = "http://esb.mct.com.co:8280/services/proxy_registrypolicydata";
+
     public static final String URL_POST_SEND_SMS_VERIFICATION = "https://api.authy.com/protected/json/phones/verification/start";
 
     public static final String URL_GET_CHECK_VERIFICATION = "https://api.authy.com/protected/json/phones/verification/check";
@@ -68,4 +70,9 @@ public class Constants {
 
     public static final String COUNTRY_CODE = "57";
 
+    public static final String MESSAGE_SUCCESS = "message_success";
+
+    public static final String MESSAGE_TITLE = "message_title";
+
+    public static final String MESSAGE_BODY = "message_body";
 }

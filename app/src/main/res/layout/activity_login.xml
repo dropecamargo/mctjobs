@@ -1,179 +1,286 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/frame_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.koiti.mctjobs.LoginActivity">
 
-    <!-- Login progress -->
-    <ProgressBar
-        android:id="@+id/login_progress"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone" />
+    <ImageView
+        android:id="@+id/login_background"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scaleType="centerCrop"/>
 
-    <ScrollView
-        android:id="@+id/login_form"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin">
-
-            <TextView
-                android:id="@+id/etiqueta_opciones_pago"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/activity_vertical_margin"
-                android:text="Opciones de ingreso:"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <RadioGroup
-                android:id="@+id/login_type"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/login_type"
-                android:orientation="horizontal"
-                android:layout_marginBottom="@dimen/activity_vertical_margin">
-
-                <RadioButton
-                    android:id="@+id/type_internal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="16dp"
-                    android:checked="true"
-                    android:text="Interno"
-                    android:onClick="typeLogin"/>
-
-                <RadioButton
-                    android:id="@+id/type_external"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="false"
-                    android:text="Externo"
-                    android:onClick="typeLogin"/>
-            </RadioGroup>
+            android:layout_height="match_parent">
 
             <LinearLayout
-                android:id="@+id/account_login_form"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="visible">
-                    <AutoCompleteTextView
-                        android:id="@+id/account"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginRight="15dp">
+
+                    <!-- Image menu -->
+                    <ImageButton
+                        android:id="@+id/login_type"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right|top"
+                        android:onClick="typeLogin"
+                        android:src="@drawable/ic_action_login"
+                        android:background="@null"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingBottom="20dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp">
+
+                    <!-- Layout static components -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/prompt_email"
-                        android:inputType="textAutoComplete"
-                        android:imeActionId="@+id/password"
-                        android:maxLines="1"
-                        android:singleLine="true" />
+                        android:orientation="vertical">
 
-                    <EditText
-                        android:id="@+id/password"
+                        <!-- Login logo image -->
+                        <ImageView
+                            android:id="@+id/login_logo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginBottom="30dp"
+                            android:maxWidth="150dp"/>
+
+                        <!-- Login progress -->
+                        <ProgressBar
+                            android:id="@+id/login_progress"
+                            style="?android:attr/progressBarStyleLarge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:layout_gravity="center"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+
+                    <!-- Layout dynamic components -->
+                    <LinearLayout
+                        android:id="@+id/login_form"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/prompt_password"
-                        android:imeActionId="@+id/login"
-                        android:imeActionLabel="@string/action_sign_in_short"
-                        android:imeOptions="actionUnspecified"
-                        android:inputType="textPassword"
-                        android:maxLines="1"
-                        android:singleLine="true" />
+                        android:orientation="vertical"
+                        android:paddingLeft="@dimen/activity_horizontal_margin"
+                        android:paddingRight="@dimen/activity_horizontal_margin">
 
-                    <Button
-                        android:id="@+id/sign_in_button"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="@string/action_sign_in"
-                        android:theme="@style/PrimaryButton" />
+                        <LinearLayout
+                            android:id="@+id/account_login_form"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                                <android.support.design.widget.TextInputLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:theme="@style/LoginThemeTextLabel">
+
+                                    <AutoCompleteTextView
+                                        android:id="@+id/account"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:hint="@string/prompt_email"
+                                        android:inputType="textAutoComplete"
+                                        android:imeActionId="@+id/password"
+                                        android:maxLines="1"
+                                        android:singleLine="true"
+                                        android:theme="@style/LoginThemeTextLabel"
+                                        android:textColor="@color/white"
+                                        android:textColorHint="@color/white"/>
+                                </android.support.design.widget.TextInputLayout>
+
+                                <android.support.design.widget.TextInputLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:theme="@style/LoginThemeTextLabel">
+
+                                    <EditText
+                                        android:id="@+id/password"
+                                        android:layout_height="wrap_content"
+                                        android:layout_width="fill_parent"
+                                        android:hint="@string/prompt_password"
+                                        android:imeActionLabel="@string/action_sign_in_short"
+                                        android:imeOptions="actionSend"
+                                        android:imeActionId="4"
+                                        android:inputType="textPassword"
+                                        android:maxLines="1"
+                                        android:theme="@style/LoginThemeTextLabel"
+                                        android:textColor="@color/white"
+                                        android:textColorHint="@color/white"/>
+                                </android.support.design.widget.TextInputLayout>
+
+                                <Button
+                                    android:id="@+id/sign_in_button"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="@dimen/button_general_height"
+                                    android:layout_marginTop="16dp"
+                                    android:text="@string/action_sign_in"
+                                    android:background="@drawable/button_general_corners"
+                                    android:textColor="@drawable/button_general_text" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/phone_login_form"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="visible">
+
+                            <android.support.v7.widget.CardView
+                                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                card_view:cardBackgroundColor="@color/greyTransparent"
+                                android:layout_marginBottom="15dp">
+                                    <TextView
+                                        android:id="@+id/phone_info"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:padding="8dp"
+                                        android:textSize="15dp"
+                                        android:gravity="center"
+                                        android:textColor="@color/white"
+                                        android:text="@string/info_phone_sign_in" />
+                            </android.support.v7.widget.CardView>
+
+                            <android.support.design.widget.TextInputLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:errorEnabled="true"
+                                app:theme="@style/LoginThemeTextLabel">
+
+                                <EditText
+                                    android:id="@+id/phone"
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="fill_parent"
+                                    android:hint="@string/prompt_phone"
+                                    android:imeActionLabel="@string/action_phone_sign_in"
+                                    android:imeOptions="actionSend"
+                                    android:imeActionId="4"
+                                    android:inputType="phone"
+                                    android:maxLines="1"
+                                    android:theme="@style/LoginThemeTextLabel"
+                                    android:textColor="@color/white"
+                                    android:textColorHint="@color/white"/>
+                            </android.support.design.widget.TextInputLayout>
+
+                            <Button
+                                android:id="@+id/sign_in_button_phone"
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/button_general_height"
+                                android:layout_marginTop="16dp"
+                                android:text="@string/action_phone_sign_in"
+                                android:background="@drawable/button_general_corners"
+                                android:textColor="@drawable/button_general_text"
+                                android:gravity="center_vertical|center_horizontal" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/phone_login_confirm"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <android.support.v7.widget.CardView
+                                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                card_view:cardBackgroundColor="@color/greyTransparent"
+                                android:layout_marginBottom="15dp">
+
+                                <LinearLayout
+                                    android:orientation="vertical"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
+                                    <TextView
+                                        android:id="@+id/phone_confirm_message"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:padding="8dp"
+                                        android:textSize="15dp"
+                                        android:gravity="center"
+                                        android:textColor="@color/white" />
+
+                                    <TextView
+                                        android:id="@+id/phone_confirm_info"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:padding="8dp"
+                                        android:textSize="15dp"
+                                        android:gravity="center"
+                                        android:textColor="@color/white"
+                                        android:text="@string/info_phone_confirm"/>
+                                </LinearLayout>
+                            </android.support.v7.widget.CardView>
+
+                            <android.support.design.widget.TextInputLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:theme="@style/LoginThemeTextLabel">
+
+                                <EditText
+                                    android:id="@+id/phone_code_confirm"
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="fill_parent"
+                                    android:inputType="number"
+                                    android:hint="@string/prompt_phone_confirm"
+                                    android:theme="@style/LoginThemeTextLabel"
+                                    android:textColor="@color/white"
+                                    android:textColorHint="@color/white"
+                                    android:imeActionLabel="@string/action_phone_sign_in"
+                                    android:imeOptions="actionSend"
+                                    android:imeActionId="4"/>
+                            </android.support.design.widget.TextInputLayout>
+
+                            <Button
+                                android:id="@+id/sign_in_button_phone_confirm"
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/button_general_height"
+                                android:layout_marginTop="16dp"
+                                android:text="@string/action_phone_sign_in"
+                                android:background="@drawable/button_general_corners"
+                                android:textColor="@drawable/button_general_text" />
+
+                            <Button
+                                android:id="@+id/sign_in_button_phone_back"
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/button_general_height"
+                                android:layout_marginTop="16dp"
+                                android:text="@string/action_phone_sign_in_back"
+                                android:background="@drawable/button_general_corners"
+                                android:textColor="@drawable/button_general_text" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/phone_login_form"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/phone_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="16dp"
-                    android:text="@string/info_phone_sign_in"/>
-
-                <EditText
-                    android:id="@+id/phone"
-                    android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
-                    android:inputType="phone"
-                    android:hint="@string/prompt_phone"/>
-
-                <Button
-                    android:id="@+id/sign_in_button_phone"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/action_phone_sign_in"
-                    android:theme="@style/PrimaryButton" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/phone_login_confirm"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/phone_confirm_message"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="16dp"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:id="@+id/phone_confirm_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="16dp"
-                    android:text="@string/info_phone_confirm"/>
-
-                <EditText
-                    android:id="@+id/phone_code_confirm"
-                    android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
-                    android:inputType="number"
-                    android:hint="@string/prompt_phone_confirm"/>
-
-                <Button
-                    android:id="@+id/sign_in_button_phone_confirm"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/action_phone_sign_in"
-                    android:theme="@style/PrimaryButton" />
-
-                <Button
-                    android:id="@+id/sign_in_button_phone_back"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:theme="@style/PrimaryButton"
-                    android:text="@string/action_phone_sign_in_back"/>
-            </LinearLayout>
-
-        </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+</FrameLayout>

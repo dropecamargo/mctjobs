@@ -12,6 +12,9 @@
     <string name="tab_attending">Atendiendo</string>
     <string name="tab_finished">Terminados</string>
 
+    <string name="home_title">Mct - Logística y Transporte</string>
+    <string name="home_subtitle">Bienvenidos</string>
+
     <string name="action_cancel">Rechazar</string>
     <string name="action_accept">Aceptar</string>
     <string name="action_search">Buscar</string>
@@ -25,6 +28,7 @@
     <string name="action_call">Llamada</string>
     <string name="action_instructions">Instrucciones</string>
     <string name="action_turn">Enturnamiento</string>
+    <string name="action_jobs">Lista de trabajos</string>
     <string name="action_image">Agregar imágenes</string>
     <string name="action_gps_title">Geolocalización desactivada</string>
     <string name="action_gps_message">Mct necesita acceso a tu ubicación. Activa los servicios de geolocalización.</string>
@@ -109,7 +113,7 @@
     <string name="action_phone_sign_in_back">Solicitar un nuevo código</string>
     <string name="info_phone_sign_in">MCT enviará un único mensaje SMS para verificar tu número de teléfono. Es posible que tu proveedor te cobre por dicho mensaje.</string>
     <string name="info_phone_confirm">Para verificar tu número de teléfono por favor introduce el código.</string>
-    <string name="action_sign_in_short">Iniciar sesión</string>
+    <string name="action_sign_in_short">Ingresar</string>
     <string name="error_invalid_email">Esta cuenta de usuario no es válida</string>
     <string name="error_invalid_phone">Número de teléfono no es válido</string>
     <string name="error_invalid_phone_code">Código de verificación no es válido</string>
@@ -118,7 +122,14 @@
     <string name="error_field_required">Este campo es requerido</string>
     <string name="error_field_other_destination">Por favor seleccione destino diferente</string>
 
+    <string name="action_internal">Internos (Empleados)</string>
+    <string name="action_external">Externos (Conductores)</string>
+
     <string name="nav_others_title">Otros</string>
     <string name="nav_item_turn">Enturnamiento</string>
+    <string name="nav_item_jobs">Trabajos</string>
     <string name="title_activity_terms">TermsActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -3,7 +3,9 @@ package com.koiti.mctjobs;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -27,6 +29,9 @@ import com.koiti.mctjobs.helpers.Utils;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.models.Step;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -48,9 +53,12 @@ public class StepActivity extends ActionBarActivity {
     private FrameLayout wrapper_layout;
     private Tracker tracker;
 
+    private ImageView mJobImage;
+
     private TextView id;
-    private TextView details;
+    private TextView document;
     private TextView formatdate;
+    private TextView details;
     private TextView title_step;
     private TextView message_step;
     private TextView info_step;
@@ -127,17 +135,25 @@ public class StepActivity extends ActionBarActivity {
         wrapper_layout = (FrameLayout) findViewById(R.id.wrapper_layout);
 
         id = (TextView) findViewById(R.id.id);
-        details = (TextView) findViewById(R.id.details);
+        document = (TextView) findViewById(R.id.document);
         formatdate = (TextView) findViewById(R.id.formatdate);
-
+        details = (TextView) findViewById(R.id.details);
         title_step = (TextView) findViewById(R.id.title_step);
         message_step = (TextView) findViewById(R.id.message_step);
         info_step = (TextView) findViewById(R.id.info_step);
 
-        // Data
-        id.setText( "(" + Integer.toString(job.getId()) + ") " + job.getDocument() );
-        details.setText( Utils.fromHtml(job.getDetails()) );
+        mJobImage = (ImageView) findViewById(R.id.job_title_image);
+
+        // Load image vehicle
+        ImageLoader loaderTitle = ImageLoader.getInstance();
+        DisplayImageOptions optionsVehicle = new DisplayImageOptions.Builder().cacheInMemory(true)
+                .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+        loaderTitle.displayImage("drawable://" + R.drawable.job_background, mJobImage, optionsVehicle);
+
+        id.setText( Integer.toString(job.getId()) );
         formatdate.setText( job.getFormatdate() );
+        document.setText( job.getDocument() );
+        details.setText( Utils.fromHtml(job.getDetails()) );
 
         // Actions
         actions_menu = (FloatingActionsMenu) findViewById(R.id.actions_menu);
