@@ -74,6 +74,8 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
         viewPager.setAdapter(mAdapter);
         TabLayout tabLayout = (TabLayout)findViewById(R.id.tablayout);
         tabLayout.setupWithViewPager(viewPager);
+
+        System.out.println("push........");
     }
 
     @Override
