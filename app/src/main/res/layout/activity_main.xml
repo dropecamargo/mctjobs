@@ -7,7 +7,7 @@
     android:fitsSystemWindows="true">
 
     <ImageView
-        android:id="@+id/home_background"
+        android:id="@+id/main_background"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:scaleType="centerCrop"/>
@@ -33,10 +33,13 @@
                 android:id="@+id/tablayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
                 app:tabGravity="fill"
-                android:theme="@style/ActionBar"
-                app:theme="@style/ActionBar"/>
+                android:theme="@style/TabBar"
+                app:theme="@style/TabBar"
+                android:background="@drawable/tab_main_background"
+                app:tabTextAppearance="@style/TabBarWidgetText"/>
+
+            <!--android:background="?attr/colorPrimary"-->
 
             <android.support.v4.view.ViewPager
                 android:id="@+id/viewpager"

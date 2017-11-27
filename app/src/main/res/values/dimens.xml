@@ -5,11 +5,15 @@
 
     <dimen name="divider_decoration_height">1dp</dimen>
 
-    <dimen name="button_general_height">35dp</dimen>
-    <dimen name="button_general_radius">25dp</dimen>
+    <dimen name="button_secondary_height">60dp</dimen>
+    <dimen name="button_secondary_radius">5dp</dimen>
 
     <dimen name="button_home_height">85dp</dimen>
     <dimen name="button_home_radius">10dp</dimen>
+
+    <dimen name="button_general_height">35dp</dimen>
+    <dimen name="button_general_radius">25dp</dimen>
+
     <!-- Detail Gallery -->
     <dimen name="image_thumbnail_size">100dp</dimen>
     <dimen name="image_thumbnail_spacing">1dp</dimen>

@@ -83,7 +83,6 @@ public class NotificationService extends Service {
 
                     final Notification notification = mJob.getNextNotification();
                     if(notification != null) {
-                        // Log.e(TAG, "Ingresooo " + notification.getId() + " -> " + notification.getProcessing());
 
                         if( notification.getProcessing() == false ) {
 
@@ -131,12 +130,18 @@ public class NotificationService extends Service {
 
                                 for (int f = 0; f < files.length(); f++) {
                                     JSONObject file = (JSONObject) files.get(f);
-
                                     // Image
+                                    Bitmap bmImage = null;
                                     File fileimage = new File(file.getString("content"));
-                                    final InputStream imageStream = getApplicationContext().getContentResolver().openInputStream(Uri.fromFile(fileimage));
-                                    Bitmap bmImage = BitmapFactory.decodeStream(imageStream);
-                                    file.put("content", Image.encodeImage(bmImage));
+                                    if(fileimage.exists()) {
+                                        final InputStream imageStream = getApplicationContext().getContentResolver().openInputStream(Uri.fromFile(fileimage));
+                                        bmImage = BitmapFactory.decodeStream(imageStream);
+                                        file.put("content", Image.encodeImage(bmImage));
+                                    }else{
+                                        bmImage = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.not_found);
+                                        file.put("file", "imagenotfound.jpg");
+                                        file.put("content", Image.encodeImage(bmImage));
+                                    }
                                     documents.put(file);
 
                                     // Recicle bitmap
@@ -146,7 +151,6 @@ public class NotificationService extends Service {
                                 }
                             }
                             params.put("documents", (Object) documents);
-                            // Log.i(TAG, params.toString());
 
                             // Sync report
                             ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));

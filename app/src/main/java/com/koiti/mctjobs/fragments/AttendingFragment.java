@@ -4,6 +4,7 @@ package com.koiti.mctjobs.fragments;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,6 +28,7 @@ import java.util.Locale;
 public class AttendingFragment extends Fragment {
 
     private List<Job> jobList = new ArrayList<>();
+
     private DataBaseManagerJob mJob;
     public JobAdapter mAdapter;
     private RecyclerView mRecyclerView;
@@ -52,7 +54,7 @@ public class AttendingFragment extends Fragment {
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         jobList = mJob.getJobsList("ACEPTADA");
-        mAdapter = new JobAdapter(jobList, getActivity());
+        mAdapter = new JobAdapter(jobList, getActivity(), true);
         mRecyclerView.setAdapter(mAdapter);
 
         return view;
@@ -79,10 +81,10 @@ public class AttendingFragment extends Fragment {
             mAdapter.notifyDataSetChanged();
     }
 
-    private void loadList() {
+    public void loadList() {
         if(isAdded()) {
             jobList = mJob.getJobsList("ACEPTADA");
-            mAdapter = new JobAdapter(jobList, getActivity());
+            mAdapter = new JobAdapter(jobList, getActivity(), true);
             mRecyclerView.setAdapter(mAdapter);
         }
     }
@@ -97,7 +99,7 @@ public class AttendingFragment extends Fragment {
                 loadList();
             } else {
                 jobList = mJob.getFilterJobsList("ACEPTADA", text);
-                mAdapter = new JobAdapter(jobList, getActivity());
+                mAdapter = new JobAdapter(jobList, getActivity(), true);
                 mRecyclerView.setAdapter(mAdapter);
                 mAdapter.notifyDataSetChanged();
             }

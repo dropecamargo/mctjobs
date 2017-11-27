@@ -1,21 +1,21 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
-    android:background="@color/greyLight"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/greyLight">
 
     <ScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:fab="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/scroll_detail"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorAccent">
+        android:layout_height="match_parent">
 
         <RelativeLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorAccent">
+            android:paddingBottom="10dp">
 
             <RelativeLayout
                 android:id="@+id/layout_title"
@@ -24,8 +24,9 @@
 
                 <ImageView
                     android:id="@+id/job_title_image"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxHeight="32dp"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentRight="true"
                     android:scaleType="centerCrop"/>
@@ -75,7 +76,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/layout_title"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp">
 
@@ -90,6 +91,31 @@
 
             </android.support.v7.widget.CardView>
 
+            <Button
+                android:id="@+id/button_step"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_secondary_height"
+                android:background="@drawable/button_secondary_corners"
+                android:textColor="@drawable/button_general_text"
+                android:onClick="openMenu"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_below="@+id/layout_detail"/>
+
+            <LinearLayout
+                android:id="@+id/list_steps"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_below="@+id/button_step"
+                android:scrollbars="none"
+                android:headerDividersEnabled="true"
+                android:footerDividersEnabled="true"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp" />
+
             <TextView
                 android:id="@+id/info_step"
                 android:background="@color/info"
@@ -102,46 +128,7 @@
                 android:layout_alignParentTop="true"
                 android:gravity="center"
                 android:visibility="gone"
-                android:layout_below="@+id/layout_detail"/>
-
-            <TextView
-                android:id="@+id/title_step"
-                android:background="@color/teal"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:textSize="15dp"
-                android:layout_marginTop="10dp"
-                android:padding="5dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_below="@+id/info_step"
-                android:textAllCaps="true"
-                android:clickable="true"
-                android:onClick="openMenu"/>
-
-            <TextView
-                android:id="@+id/message_step"
-                android:background="@color/teal"
-                android:textColor="@color/white"
-                android:textSize="15dp"
-                android:padding="5dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_below="@+id/title_step"
-                android:visibility="gone"
-                android:onClick="openMenu"/>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:id="@+id/list_steps"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@+id/message_step"
-                android:scrollbars="none"
-                android:headerDividersEnabled="true"
-                android:footerDividersEnabled="true" />
+                android:layout_below="@+id/list_steps"/>
 
         </RelativeLayout>
     </ScrollView>

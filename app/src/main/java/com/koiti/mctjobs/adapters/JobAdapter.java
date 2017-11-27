@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.koiti.mctjobs.R;
@@ -25,13 +27,13 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
     private Context mContext;
     private FragmentActivity fActivity;
     private List<Job> items;
-    private Integer bg;
+    private Boolean progress;
 
-    public JobAdapter(List<Job> items, FragmentActivity fActivity) {
+    public JobAdapter(List<Job> items, FragmentActivity fActivity, Boolean progress) {
         this.fActivity = fActivity;
         this.mContext = fActivity.getApplicationContext();
         this.items = items;
-        this.bg = R.color.white;
+        this.progress = progress;
     }
 
     @Override
@@ -42,18 +44,25 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
     @Override
     public void onBindViewHolder(JobViewHolder holder, int position) {
-        // Background
-        holder.itemView.setBackgroundColor(mContext.getResources().getColor(bg));
-        bg = (bg == R.color.greyLight) ? R.color.white : R.color.greyLight;
-
         Job item = items.get(position);
         holder.itemView.setTag(item);
 
+        holder.title.setText( Utils.capitalize(item.getWorktypename()) );
         holder.id.setText( "(" + Integer.toString(item.getId()) + ") " + item.getDocument() );
         holder.abstrac.setText( Utils.fromHtml(item.getAbstrac()) );
         holder.formatdate.setText(item.getFormatdate());
         if( item.getPendingsync() ) {
             holder.pending_sync.setVisibility(View.VISIBLE);
+        }
+
+        if(this.progress && item.getAmountsteps() != 0) {
+            holder.layout_progress.setVisibility(View.VISIBLE);
+
+            int percentage = (int) Math.round(((double) item.getCurrentstep() / (double) item.getAmountsteps()) * 100);
+            holder.text_progress_job.setText(percentage + "%");
+
+            holder.progress_job.setMax(item.getAmountsteps());
+            holder.progress_job.setProgress(item.getCurrentstep());
         }
 
         holder.setClickListener(new JobClickListener() {
@@ -75,20 +84,30 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
     static class JobViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+        protected TextView title;
         protected TextView id;
         protected TextView abstrac;
         protected TextView formatdate;
         protected ImageView pending_sync;
+
+        protected RelativeLayout layout_progress;
+        protected ProgressBar progress_job;
+        protected TextView text_progress_job;
 
         private JobClickListener clickListener;
 
         public JobViewHolder(View itemView) {
             super(itemView);
 
+            this.title = (TextView) itemView.findViewById(R.id.title);
             this.id = (TextView) itemView.findViewById(R.id.id);
             this.abstrac = (TextView) itemView.findViewById(R.id.abstrac);
             this.formatdate = (TextView) itemView.findViewById(R.id.formatdate);
             this.pending_sync = (ImageView) itemView.findViewById(R.id.pending_sync);
+
+            this.layout_progress = (RelativeLayout) itemView.findViewById(R.id.layout_progress);
+            this.progress_job = (ProgressBar) itemView.findViewById(R.id.progress_job);
+            this.text_progress_job = (TextView) itemView.findViewById(R.id.text_progress_job);
 
             itemView.setOnClickListener(this);
         }

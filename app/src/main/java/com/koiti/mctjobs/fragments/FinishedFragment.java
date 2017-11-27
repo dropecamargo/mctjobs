@@ -51,7 +51,7 @@ public class FinishedFragment extends Fragment {
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         jobList = mJob.getJobsList("FINALIZADA");
-        mAdapter = new JobAdapter(jobList, getActivity());
+        mAdapter = new JobAdapter(jobList, getActivity(), false);
         mRecyclerView.setAdapter(mAdapter);
 
         return view;
@@ -67,7 +67,7 @@ public class FinishedFragment extends Fragment {
     private void loadList() {
         if(isAdded()) {
             jobList = mJob.getJobsList("FINALIZADA");
-            mAdapter = new JobAdapter(jobList, getActivity());
+            mAdapter = new JobAdapter(jobList, getActivity(), false);
             mRecyclerView.setAdapter(mAdapter);
         }
     }
@@ -82,7 +82,7 @@ public class FinishedFragment extends Fragment {
                 loadList();
             } else {
                 jobList = mJob.getFilterJobsList("FINALIZADA", text);
-                mAdapter = new JobAdapter(jobList, getActivity());
+                mAdapter = new JobAdapter(jobList, getActivity(), false);
                 mRecyclerView.setAdapter(mAdapter);
                 mAdapter.notifyDataSetChanged();
             }

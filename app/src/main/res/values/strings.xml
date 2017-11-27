@@ -101,6 +101,8 @@
     <string name="prompt_second_destination">Destino dos</string>
     <string name="prompt_empty">¿Está Vacío?</string>
     <string name="action_turn_in">Enturnar</string>
+    <string name="turn_warnings_title">Mensajes de alerta</string>
+    <string name="turn_warnings_message">Por favor actualice su información y/o documentos en la oficina de MCT más cercana</string>
 
     <!-- Strings related to login -->
     <string name="title_activity_login">Iniciar sesión</string>

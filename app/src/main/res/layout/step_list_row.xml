@@ -1,52 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/container"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:focusable="true"
-    android:paddingLeft="10dp"
-    android:paddingRight="10dp"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp"
     android:clickable="true"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
     <TextView
-        android:id="@+id/title"
-        android:textSize="15dp"
-        android:textStyle="bold"
-        android:layout_alignParentTop="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/textColorPrimary"/>
-
-    <ImageView
-        android:id="@+id/pending_sync"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_action_pending_sync"
-        android:tint="@color/colorPrimaryDark"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_above="@+id/date"
-        android:visibility="gone"/>
+        android:layout_width="16dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/step_list_background"
+        android:layout_marginBottom="2dp" />
 
     <TextView
-        android:id="@+id/date"
-        android:layout_below="@id/title"
-        android:textSize="13dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/textColorPrimary"/>
-
-    <TextView
-        android:id="@+id/ignore"
-        android:layout_below="@id/title"
-        android:textSize="13dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:text="1"
+        android:layout_width="30dp"
+        android:layout_height="match_parent"
+        android:id="@+id/number"
+        android:textSize="16dp"
         android:textColor="@color/textColorPrimary"
-        android:layout_alignParentRight="true" />
+        android:gravity="center|center_vertical"/>
 
-</RelativeLayout>
+    <LinearLayout
+        android:id="@+id/layout_detail"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="0.44">
+
+            <TextView
+                android:id="@+id/date"
+                android:textSize="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textColorPrimary"
+                android:gravity="bottom" />
+
+            <TextView
+                android:id="@+id/ignore"
+                android:layout_below="@id/date"
+                android:textSize="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="bottom|center"
+                android:textColor="@color/textColorPrimary"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="0.44">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="0.9"
+                android:gravity="top|center_vertical"
+                android:id="@+id/title"
+                android:textSize="16dp"
+                android:textColor="@color/textColorPrimary"
+                android:text="Title" />
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                android:layout_marginRight="10dp">
+
+                <ImageView
+                    android:id="@+id/pending_sync"
+                    android:layout_width="wrap_content"
+                    android:layout_height="25dp"
+                    android:layout_gravity="right"
+                    android:src="@drawable/common_google_signin_btn_text_dark" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

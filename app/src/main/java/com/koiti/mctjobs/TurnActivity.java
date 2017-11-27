@@ -65,6 +65,7 @@ public class TurnActivity extends ActionBarActivity {
 
     // Layout vehicle
     private LinearLayout mLayoutVehicle;
+    private LinearLayout mLayoutWarnings;
     private ImageView mTurnVehicle;
     private TextView turn_info_vehicle;
     private TextView turn_placa_vehicle;
@@ -118,6 +119,7 @@ public class TurnActivity extends ActionBarActivity {
 
         // Layout vehicle
         mLayoutVehicle = (LinearLayout) findViewById(R.id.layout_vehicle);
+        mLayoutWarnings = (LinearLayout) findViewById(R.id.layout_warnings);
         mTurnVehicle = (ImageView) findViewById(R.id.turn_icon_vehicle);
 
         // Layout info
@@ -174,7 +176,6 @@ public class TurnActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
-//                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -356,6 +357,15 @@ public class TurnActivity extends ActionBarActivity {
 
                 // Show layout message
                 mLayoutMessage.setVisibility(View.VISIBLE);
+
+                // Show warning message
+                JSONObject enturnamiento = data.getJSONObject("enturnamiento");
+                JSONObject validations = enturnamiento.getJSONObject("validaciones");
+                JSONArray warnings = validations.getJSONArray("warnings");
+
+                if(warnings.length() > 0) {
+                    showWarnings(warnings);
+                }
             }
         } catch (JSONException | NullPointerException e ) {
             Log.e(TAG, e.getMessage());
@@ -477,6 +487,12 @@ public class TurnActivity extends ActionBarActivity {
                             showMessage(sucessfull, title, body);
                             // Show layout message
                             mLayoutMessage.setVisibility(View.VISIBLE);
+
+                            JSONObject validations = turn.getJSONObject("validaciones");
+                            JSONArray warnings = validations.getJSONArray("warnings");
+                            if(warnings.length() > 0) {
+                                showWarnings(warnings);
+                            }
                         }
                     } catch (JSONException | NullPointerException e ) {
                         Log.e(TAG, e.getMessage());
@@ -500,7 +516,6 @@ public class TurnActivity extends ActionBarActivity {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
-                    System.out.println(" onFailure -> " + response);
                     try
                     {
                         if(response == null) {
@@ -581,5 +596,46 @@ public class TurnActivity extends ActionBarActivity {
             fragmentTransaction.add(R.id.layout_message, messageFragment, TurnActivity.TAG);
             fragmentTransaction.commit();
         }
+    }
+
+    public void showWarnings(JSONArray warnings) throws JSONException {
+
+        // Load image warnings
+        ImageLoader loaderWarnings = ImageLoader.getInstance();
+        DisplayImageOptions optionsWarnings = new DisplayImageOptions.Builder().cacheInMemory(true)
+                .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+        loaderWarnings.loadImage("drawable://" + R.drawable.turn_alert_background, null, optionsWarnings, new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                BitmapDrawable drawable = new BitmapDrawable(getResources(), loadedImage);
+                mLayoutWarnings.setBackgroundDrawable(drawable);
+            }
+        });
+
+        for (int i = 0; i < warnings.length(); i++) {
+            JSONObject jsonObject = (JSONObject) warnings.get(i);
+            View view = getLayoutInflater().inflate(R.layout.warning_list_row, null);
+
+            TextView title = (TextView) view.findViewById(R.id.title);
+            TextView subtitle = (TextView) view.findViewById(R.id.subtitle);
+
+            LinearLayout mLayoutFecha = (LinearLayout) view.findViewById(R.id.info_fecha);
+            TextView date = (TextView) view.findViewById(R.id.fecha);
+            TextView typedate = (TextView) view.findViewById(R.id.tipofecha);
+
+            title.setText(Utils.capitalize(jsonObject.getString("objeto")));
+            subtitle.setText(jsonObject.getString("texto"));
+
+            String fecha = jsonObject.getString("fecha");
+            if ( !fecha.equals(null) && !fecha.equals("null") && !fecha.isEmpty()) {
+                date.setText(fecha);
+                typedate.setText(jsonObject.getString("tipofechavalida"));
+
+                mLayoutFecha.setVisibility(View.VISIBLE);
+            }
+
+            mLayoutWarnings.addView(view);
+        }
+        mLayoutWarnings.setVisibility(View.VISIBLE);
     }
 }

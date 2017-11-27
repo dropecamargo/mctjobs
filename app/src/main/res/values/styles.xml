@@ -35,6 +35,18 @@
         <item name="android:textColorSecondary">@color/white</item>
     </style>
 
+    <style name="TabBar" parent="Widget.AppCompat.Light.ActionBar">
+        <item name="colorAccent">@color/colorPrimaryInternalDark</item>
+        <item name="colorPrimary">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorPrimary</item>
+    </style>
+
+    <style name="TabBarWidgetText" parent="@android:style/TextAppearance.Widget.TabWidget">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
     <style name="menu_labels_style">
         <item name="android:background">@drawable/fab_label_background</item>
         <item name="android:textColor">@color/white</item>

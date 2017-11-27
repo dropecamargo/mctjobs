@@ -1,8 +1,8 @@
 package com.koiti.mctjobs.models;
 
 public class Job {
-    private int id;
-    private int id_user;
+    private Integer id;
+    private Integer id_user;
     private String notes;
     private String worktypename;
     private String state;
@@ -13,6 +13,8 @@ public class Job {
     private String abstrac;
     private String details;
     private Boolean pendingsync;
+    private Integer amountsteps;
+    private Integer currentstep;
 
     public Job(int id) {
         this.id = id;
@@ -112,5 +114,21 @@ public class Job {
 
     public void setPendingsync(Boolean pendingsync) {
         this.pendingsync = pendingsync;
+    }
+
+    public int getAmountsteps() {
+        return amountsteps;
+    }
+
+    public void setAmountsteps(int amountsteps) {
+        this.amountsteps = amountsteps;
+    }
+
+    public Integer getCurrentstep() {
+        return currentstep;
+    }
+
+    public void setCurrentstep(Integer currentstep) {
+        this.currentstep = currentstep;
     }
 }

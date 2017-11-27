@@ -44,7 +44,9 @@ public class DataBaseManagerJob extends DataBaseManager {
             + JobContract.KEY_CREATED + " TEXT,"
             + JobContract.KEY_FORMATDATE + " TEXT,"
             + JobContract.KEY_ABSTRACT + " TEXT,"
-            + JobContract.KEY_DETAILS + " TEXT" + ")";
+            + JobContract.KEY_DETAILS + " TEXT,"
+            + JobContract.KEY_AMOUNTSTEPS + " INTEGER,"
+            + JobContract.KEY_CURRENTSTEP + " INTEGER" + ")";
 
     public DataBaseManagerJob(Context context) {
         super(context);
@@ -71,6 +73,7 @@ public class DataBaseManagerJob extends DataBaseManager {
         values.put(JobContract.KEY_FORMATDATE, job.getFormatdate());
         values.put(JobContract.KEY_ABSTRACT, job.getAbstrac());
         values.put(JobContract.KEY_DETAILS, job.getDetails());
+        values.put(JobContract.KEY_AMOUNTSTEPS, job.getAmountsteps());
 
         super.getDb().insertOrThrow(DataBaseManagerJob.JobContract.TABLE, null, values);
     }
@@ -185,6 +188,7 @@ public class DataBaseManagerJob extends DataBaseManager {
                 + JobContract.KEY_ID + ", " + JobContract.KEY_DOCUMENT + ", " + JobContract.KEY_WORKTYPENAME + ", "
                 + JobContract.KEY_NOTES + ", " + JobContract.KEY_FORMATDATE + ", " + JobContract.KEY_DETAILS + ", "
                 + JobContract.KEY_STATE + ", " + JobContract.KEY_STEP + ", " + JobContract.KEY_ABSTRACT + ", "
+                + " COALESCE(" + JobContract.KEY_AMOUNTSTEPS + ",0), COALESCE(" + JobContract.KEY_CURRENTSTEP + ",0), "
                 + "(CASE WHEN ( SELECT COALESCE( " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_ID + ", 0)"
                 + " FROM " + DataBaseManagerNotification.NotificationContract.TABLE
                 + " WHERE " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_WORK + " = " + JobContract.TABLE + "." + JobContract.KEY_ID
@@ -203,7 +207,9 @@ public class DataBaseManagerJob extends DataBaseManager {
             job.setState(cursor.getString(6));
             job.setStep(cursor.getString(7));
             job.setAbstrac(cursor.getString(8));
-            job.setPendingsync(cursor.getInt(9) > 0);
+            job.setAmountsteps(cursor.getInt(9));
+            job.setCurrentstep(cursor.getInt(10));
+            job.setPendingsync(cursor.getInt(11) > 0);
         }
         return job;
     }
@@ -212,8 +218,8 @@ public class DataBaseManagerJob extends DataBaseManager {
         List<Job> list = new ArrayList<>();
 
         Cursor cursor = super.getDb().rawQuery("SELECT " + JobContract.KEY_ID + ", " + JobContract.KEY_DOCUMENT + ", " + JobContract.KEY_ABSTRACT + ", "
-                + JobContract.KEY_WORKTYPENAME + ", " + JobContract.KEY_FORMATDATE + ", "
-                + "(CASE WHEN ( SELECT COALESCE( " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_ID + ", 0)"
+                + JobContract.KEY_WORKTYPENAME + ", " + JobContract.KEY_FORMATDATE + ", COALESCE(" + JobContract.KEY_AMOUNTSTEPS + ",0), COALESCE(" + JobContract.KEY_CURRENTSTEP + ",0), "
+                + " (CASE WHEN ( SELECT COALESCE( " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_ID + ", 0)"
                 + " FROM " + DataBaseManagerNotification.NotificationContract.TABLE
                 + " WHERE " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_WORK + " = " + JobContract.TABLE + "." + JobContract.KEY_ID
                 + " LIMIT 1) != 0 THEN 1 ELSE 0 END) AS pending_sync"
@@ -228,7 +234,9 @@ public class DataBaseManagerJob extends DataBaseManager {
             job.setAbstrac(cursor.getString(2));
             job.setWorktypename(cursor.getString(3));
             job.setFormatdate(cursor.getString(4));
-            job.setPendingsync(cursor.getInt(5) > 0);
+            job.setAmountsteps(cursor.getInt(5));
+            job.setCurrentstep(cursor.getInt(6));
+            job.setPendingsync(cursor.getInt(7) > 0);
             list.add(job);
         }
 
@@ -241,6 +249,7 @@ public class DataBaseManagerJob extends DataBaseManager {
         Cursor cursor = super.getDb().rawQuery("SELECT "
                 + JobContract.KEY_ID + ", " + JobContract.KEY_DOCUMENT + ", " + JobContract.KEY_ABSTRACT + ", "
                 + JobContract.KEY_WORKTYPENAME + ", " + JobContract.KEY_FORMATDATE + ", "
+                + " COALESCE(" + JobContract.KEY_AMOUNTSTEPS + ",0), COALESCE(" + JobContract.KEY_CURRENTSTEP + ",0), "
                 + " (CASE WHEN ( SELECT COALESCE( " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_ID + ", 0)"
                 + " FROM " + DataBaseManagerNotification.NotificationContract.TABLE
                 + " WHERE " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_WORK + " = " + JobContract.TABLE + "." + JobContract.KEY_ID
@@ -257,7 +266,9 @@ public class DataBaseManagerJob extends DataBaseManager {
             job.setAbstrac(cursor.getString(2));
             job.setWorktypename(cursor.getString(3));
             job.setFormatdate(cursor.getString(4));
-            job.setPendingsync(cursor.getInt(5) > 0);
+            job.setAmountsteps(cursor.getInt(5));
+            job.setCurrentstep(cursor.getInt(6));
+            job.setPendingsync(cursor.getInt(7) > 0);
             list.add(job);
         }
 
@@ -290,10 +301,15 @@ public class DataBaseManagerJob extends DataBaseManager {
                 job.setAbstrac(jsonObject.getString(JobContract.KEY_ABSTRACT));
                 job.setDetails(jsonObject.getString(JobContract.KEY_DETAILS));
 
+                // Get steps
+                JSONArray steps = jsonObject.getJSONArray(DataBaseManagerJob.JobContract.KEY_WORKSSTEPS);
+                job.setAmountsteps(steps.length());
+                job.setCurrentstep(0);
+
                 // Store job
                 this.store(job);
 
-                JSONArray steps = jsonObject.getJSONArray(DataBaseManagerJob.JobContract.KEY_WORKSSTEPS);
+                // Store steps
                 for (int s = 0; s < steps.length(); s++) {
                     JSONObject jsonStep = (JSONObject) steps.get(s);
 
@@ -467,6 +483,11 @@ public class DataBaseManagerJob extends DataBaseManager {
         return list;
     }
 
+    public void increaseStep(int id) {
+        super.getDb().execSQL("UPDATE " + JobContract.TABLE + " SET " + JobContract.KEY_CURRENTSTEP + " = ( COALESCE(" + JobContract.KEY_CURRENTSTEP + ", 0) + 1) "
+                + " WHERE " + JobContract.KEY_ID + " = " + id);
+    }
+
     public void changeStatus(int id, String state) {
         super.getDb().execSQL("UPDATE " + JobContract.TABLE + " SET " + JobContract.KEY_STATE + " = '" + state + "'"
                 + " WHERE " + JobContract.KEY_ID + " = " + id);
@@ -599,5 +620,7 @@ public class DataBaseManagerJob extends DataBaseManager {
         public static final String KEY_DETAILS = "details";
         public static final String KEY_WORKSSTEPS = "workssteps";
         public static final String KEY_REPORTSTYPE = "reportstype";
+        public static final String KEY_AMOUNTSTEPS = "numsteps";
+        public static final String KEY_CURRENTSTEP = "currentstep";
     }
 }

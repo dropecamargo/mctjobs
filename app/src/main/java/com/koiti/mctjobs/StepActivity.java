@@ -11,10 +11,12 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +53,7 @@ public class StepActivity extends ActionBarActivity {
     private DataBaseManagerJob mJob;
     private UserSessionManager mSession;
     private FrameLayout wrapper_layout;
+    private ScrollView scroll_detail;
     private Tracker tracker;
 
     private ImageView mJobImage;
@@ -59,8 +62,7 @@ public class StepActivity extends ActionBarActivity {
     private TextView document;
     private TextView formatdate;
     private TextView details;
-    private TextView title_step;
-    private TextView message_step;
+    private Button button_step;
     private TextView info_step;
     private LinearLayout listView;
 
@@ -106,49 +108,51 @@ public class StepActivity extends ActionBarActivity {
         // Data steps, list view
         stepList = mJob.getStepList(job);
         listView = (LinearLayout) findViewById(R.id.list_steps);
-        Integer bg = R.color.white;
+        Integer contador = stepList.size();
         for (int i=0; i< stepList.size(); i++) {
             Step step = stepList.get(i);
             View view = getLayoutInflater().inflate(R.layout.step_list_row, null);
-            RelativeLayout container = (RelativeLayout) view.findViewById(R.id.container);
-            container.setBackgroundColor(getResources().getColor(bg));
+            view.setBackgroundDrawable(getResources().getDrawable(R.drawable.step_list_border));
 
+            TextView number = (TextView) view.findViewById(R.id.number);
             TextView title = (TextView) view.findViewById(R.id.title);
             TextView date = (TextView) view.findViewById(R.id.date);
             TextView ignore = (TextView) view.findViewById(R.id.ignore);
             ImageView pending_sync = (ImageView) view.findViewById(R.id.pending_sync);
 
+            number.setText( Integer.toString(contador) );
             title.setText(step.getTitle());
             date.setText(step.getDate());
             if( step.getIgnored() ) {
                 ignore.setText(R.string.step_ignore);
             }
+
+            pending_sync.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_sync));
             if ( step.getPendingsync() ) {
-                pending_sync.setVisibility(View.VISIBLE);
+                pending_sync.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_pending_sync));
             }
 
             listView.addView(view);
-            bg = (bg == R.color.greyLight) ? R.color.white : R.color.greyLight;
+            contador --;
         }
 
         // References
         wrapper_layout = (FrameLayout) findViewById(R.id.wrapper_layout);
+        scroll_detail = (ScrollView) findViewById(R.id.scroll_detail);
 
         id = (TextView) findViewById(R.id.id);
         document = (TextView) findViewById(R.id.document);
         formatdate = (TextView) findViewById(R.id.formatdate);
         details = (TextView) findViewById(R.id.details);
-        title_step = (TextView) findViewById(R.id.title_step);
-        message_step = (TextView) findViewById(R.id.message_step);
+        button_step = (Button) findViewById(R.id.button_step);
         info_step = (TextView) findViewById(R.id.info_step);
-
         mJobImage = (ImageView) findViewById(R.id.job_title_image);
 
         // Load image vehicle
         ImageLoader loaderTitle = ImageLoader.getInstance();
-        DisplayImageOptions optionsVehicle = new DisplayImageOptions.Builder().cacheInMemory(true)
+        DisplayImageOptions optionsTitle = new DisplayImageOptions.Builder().cacheInMemory(true)
                 .cacheOnDisc(true).resetViewBeforeLoading(true).build();
-        loaderTitle.displayImage("drawable://" + R.drawable.job_background, mJobImage, optionsVehicle);
+        loaderTitle.displayImage("drawable://" + R.drawable.job_background, mJobImage, optionsTitle);
 
         id.setText( Integer.toString(job.getId()) );
         formatdate.setText( job.getFormatdate() );
@@ -166,10 +170,12 @@ public class StepActivity extends ActionBarActivity {
         options_menu = (FloatingActionsMenu) findViewById(R.id.options_menu);
 
         if(job.getState().equals("FINALIZADA")) {
-            // Title
-            title_step.setText(R.string.job_finish);
+            // Button
+            button_step.setEnabled(false);
+            button_step.setText(R.string.job_finish);
 
         }else if (job.getState().equals("NOTIFICADA") || job.getState().equals("ACEPTADA")){
+
             // Toogle menu report
             actions_menu.setVisibility(View.VISIBLE);
             actions_menu.setOnFloatingActionsMenuUpdateListener(new FloatingActionsMenu.OnFloatingActionsMenuUpdateListener() {
@@ -208,12 +214,8 @@ public class StepActivity extends ActionBarActivity {
                 return;
             }
 
-            // Title
-            title_step.setText(step.getTitle());
-
-            // Message
-            message_step.setVisibility(View.VISIBLE);
-            message_step.setText(step.getMessage());
+            // Button
+            button_step.setText(step.getTitle() + "\n" + step.getMessage());
 
             if(job.getState().equals("NOTIFICADA")) {
                 start_button.setVisibility(View.VISIBLE);
@@ -316,6 +318,7 @@ public class StepActivity extends ActionBarActivity {
 
                         // Set report
                         mJob.changeStatus(job.getId(), "ACEPTADA");
+                        mJob.increaseStep(job.getId());
                         mJob.changeReport(step, date);
 
                         // Sync report server

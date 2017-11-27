@@ -91,11 +91,11 @@ public class JobsFragment extends Fragment {
         });
 
         // Configure the refreshing colors
-        swipeContainer.setColorSchemeResources(R.color.colorPrimary);
+        swipeContainer.setColorSchemeResources(R.color.colorPrimaryInternal);
 
         // Load list
         jobList = mJob.getJobsList("NOTIFICADA");
-        mAdapter = new JobAdapter(jobList, getActivity());
+        mAdapter = new JobAdapter(jobList, getActivity(), false);
         mRecyclerView.setAdapter(mAdapter);
 
         // Start refresh animation
@@ -120,7 +120,7 @@ public class JobsFragment extends Fragment {
     private void loadList() {
         if(isAdded()) {
             jobList = mJob.getJobsList("NOTIFICADA");
-            mAdapter = new JobAdapter(jobList, getActivity());
+            mAdapter = new JobAdapter(jobList, getActivity(), false);
             mRecyclerView.setAdapter(mAdapter);
         }
 
@@ -208,7 +208,7 @@ public class JobsFragment extends Fragment {
                 loadList();
             } else {
                 jobList = mJob.getFilterJobsList("NOTIFICADA", text);
-                mAdapter = new JobAdapter(jobList, getActivity());
+                mAdapter = new JobAdapter(jobList, getActivity(), false);
                 mRecyclerView.setAdapter(mAdapter);
                 mAdapter.notifyDataSetChanged();
             }

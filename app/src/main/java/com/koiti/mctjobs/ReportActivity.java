@@ -11,7 +11,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +35,8 @@ import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.models.Report;
 import com.koiti.mctjobs.models.Step;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -54,6 +58,7 @@ public class ReportActivity extends ActionBarActivity {
     private DataBaseManagerJob mJob;
     private Tracker tracker;
 
+    private ImageView mReportImage;
     private TextView message_step;
     private TextView text_step;
     private TextView info_step;
@@ -62,7 +67,7 @@ public class ReportActivity extends ActionBarActivity {
     private Spinner reporttype_step;
     private TextView text_gallery_step;
     private ExpandableHeightGridView grid_gallery_step;
-    private FloatingActionButton report_step;
+    private Button report_step;
 
     private GridViewAdapter gAdapter;
     public GalleryData gallery_data;
@@ -99,7 +104,8 @@ public class ReportActivity extends ActionBarActivity {
         reporttype_step = (Spinner) findViewById(R.id.reporttype_step);
         text_gallery_step = (TextView) findViewById(R.id.text_gallery_step);
         grid_gallery_step = (ExpandableHeightGridView) findViewById(R.id.gallery_step);
-        report_step = (FloatingActionButton) findViewById(R.id.report_step);
+        report_step = (Button) findViewById(R.id.report_step);
+        mReportImage = (ImageView) findViewById(R.id.step_title_image);
 
         // Intent
         Intent intent = getIntent();
@@ -122,6 +128,12 @@ public class ReportActivity extends ActionBarActivity {
             finish();
             return;
         }
+
+        // Load image vehicle
+        ImageLoader loaderTitle = ImageLoader.getInstance();
+        DisplayImageOptions optionsTitle = new DisplayImageOptions.Builder().cacheInMemory(true)
+                .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+        loaderTitle.displayImage("drawable://" + R.drawable.job_background, mReportImage, optionsTitle);
 
         // Message
         message_step.setText(step.getMessage());
@@ -151,21 +163,22 @@ public class ReportActivity extends ActionBarActivity {
             switch ( action ) {
                 case Constants.INTENT_IGNORE:
                     info_step.setText(R.string.text_ignore);
-                    report_step.setIcon(R.drawable.ic_action_ignore);
                     break;
 
                 case Constants.INTENT_PAUSE:
                     if( step.getPaused() ) {
                         info_step.setText(R.string.text_unpause);
-                        report_step.setIcon(R.drawable.ic_action_play);
+                        report_step.setText(R.string.job_unpause_title);
                     }else {
                         info_step.setText(R.string.text_pause);
-                        report_step.setIcon(R.drawable.ic_action_pause);
+                        report_step.setText(R.string.job_pause_title);
+
                     }
                     break;
 
                 case Constants.INTENT_UNPAUSE:
                     info_step.setText(R.string.text_unpause);
+                    report_step.setText(R.string.job_unpause_title);
                     break;
 
                 case Constants.INTENT_REPORT:
@@ -174,7 +187,7 @@ public class ReportActivity extends ActionBarActivity {
 
                 case Constants.INTENT_CANCEL:
                     info_step.setText(R.string.text_cancel);
-                    report_step.setIcon(R.drawable.ic_action_close);
+                    report_step.setText(R.string.job_cancel_title);
                     break;
             }
         }
@@ -315,6 +328,7 @@ public class ReportActivity extends ActionBarActivity {
                         }else if( Arrays.asList(new Integer[]{ Constants.INTENT_IGNORE }).contains( action )) {
                             // Set ignore step
                             mJob.setIgnore(step, date);
+                            mJob.increaseStep(job.getId());
 
                             // Sync report step
                             mJob.storeNotification(job, step, mSession.getPartner(), true, date, job.getState(),
@@ -338,6 +352,7 @@ public class ReportActivity extends ActionBarActivity {
                         }else {
                             // Set report step
                             mJob.changeReport(step, date);
+                            mJob.increaseStep(job.getId());
 
                             // Sync report step
                             mJob.storeNotification(job, step, mSession.getPartner(), true, date, (mJob.exitNextStep(job) ? job.getState() : "FINALIZADA"),

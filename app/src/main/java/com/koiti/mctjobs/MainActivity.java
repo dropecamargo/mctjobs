@@ -1,6 +1,9 @@
 package com.koiti.mctjobs;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -14,6 +17,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.koiti.mctjobs.fragments.AttendingFragment;
 import com.koiti.mctjobs.fragments.FinishedFragment;
@@ -24,6 +29,8 @@ import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.models.Step;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class MainActivity extends ActionBarActivity implements SearchView.OnQueryTextListener {
 
@@ -31,6 +38,8 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
     private DataBaseManagerJob mJob;
     private UserSessionManager mSession;
     private GPSTracker gps;
+
+    private ImageView mMainBackground;
 
     private PagerAdapter mAdapter;
     private ActionBar actionBar;
@@ -55,6 +64,7 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
         // Database
         mJob = new DataBaseManagerJob(this);
 
+        mMainBackground = (ImageView) findViewById(R.id.main_background);
         jobsFragment = new JobsFragment();
         attendingFragment = new AttendingFragment();
         finishedFragment = new FinishedFragment();
@@ -75,7 +85,24 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
         TabLayout tabLayout = (TabLayout)findViewById(R.id.tablayout);
         tabLayout.setupWithViewPager(viewPager);
 
-        System.out.println("push........");
+        // Set tab icons
+        tabLayout.getTabAt(0).setIcon(R.drawable.ic_action_scheduled);
+        LinearLayout linearLayout = (LinearLayout)tabLayout.getChildAt(0);
+        linearLayout.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(getResources().getColor(R.color.grey));
+        drawable.setSize(1, 1);
+        linearLayout.setDividerPadding(30);
+        linearLayout.setDividerDrawable(drawable);
+
+        tabLayout.getTabAt(1).setIcon(R.drawable.ic_action_attending);
+        tabLayout.getTabAt(2).setIcon(R.drawable.ic_action_finished);
+
+        // Load image background
+        ImageLoader loaderBackground = ImageLoader.getInstance();
+        DisplayImageOptions optionsBackground = new DisplayImageOptions.Builder().cacheInMemory(true)
+                .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+        loaderBackground.displayImage("drawable://" + R.drawable.main_background, mMainBackground, optionsBackground);
     }
 
     @Override
@@ -176,6 +203,12 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
                 break;
 
                 case Constants.RESULT_NEXT_STEP:
+                    // Refresh attendingFragment
+                    if(attendingFragment instanceof AttendingFragment) {
+                        attendingFragment.loadList();
+                    }
+
+                    // Start next step
                     job = mJob.getJob(data.getIntExtra("JOB", 0));
                     if(job instanceof Job) {
                         Intent intent = new Intent(this, StepActivity.class);

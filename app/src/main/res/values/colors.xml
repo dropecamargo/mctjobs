@@ -9,6 +9,9 @@
     <color name="colorButtonNormal">#C7252B</color>
     <color name="colorButtonPressed">#8E0018</color>
 
+    <color name="colorSecundaryNormal">#4db6ac</color>
+    <color name="colorSecundaryPressed">#009688</color>
+
     <color name="colorButtonHomeNormal">#E6B54A</color>
     <color name="colorButtonHomePressed">#DB9600</color>
 
@@ -41,4 +44,7 @@
     <color name="primaryTransparent">#B2FFFFFF</color>
     <color name="greyTransparent">#80FFFFFF</color>
     <color name="blueLink">#07C</color>
+
+
+    <color name="colorProgress">#669933</color>
 </resources>
