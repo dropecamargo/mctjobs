@@ -254,8 +254,24 @@ public class LoginActivity extends ActionBarActivity {
                     // perform the user login attempt.
                     Utils.showProgress(true, mLoginFormView, mProgressView);
 
-                    // Send sms
-                    sendSmsVerification(phone, country_code);
+                    try {
+                        mRestClientApp.getAccessToken(new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                validCellphone(phone, country_code, response);
+                            }
+
+                            @Override
+                            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+                                onFailureAccessToken(throwable, response);
+                            }
+                        });
+                    } catch (JSONException | IOException | NoSuchAlgorithmException | KeyManagementException | UnrecoverableKeyException |
+                            CertificateException | KeyStoreException e ) {
+                        Log.e(TAG, e.getMessage());
+                        Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
+                        Utils.showProgress(false, mLoginFormView, mProgressView);
+                    }
                 }
             });
 
@@ -268,6 +284,62 @@ public class LoginActivity extends ActionBarActivity {
 
             // Showing Alert Message
             alertDialog.show();
+        }
+    }
+
+    public void validCellphone(final String phone, final String country_code, JSONObject oaut)
+    {
+        try {
+            mRestClientApp.validCellphone(phone, oaut, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    // Valid response
+                    try
+                    {
+                        if( response.getBoolean("successful") == true) {
+                            // sendSmsVerification
+                            sendSmsVerification(phone, country_code);
+                        }
+                    } catch (JSONException | NullPointerException e ) {
+                        Log.e(TAG, e.getMessage());
+                        Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
+
+                        // Hide progress.
+                        Utils.showProgress(false, mLoginFormView, mProgressView);
+                    }
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+                    // Valid response
+                    try
+                    {
+                        if(response == null) {
+                            throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
+                        }
+
+                        if( response.getBoolean("successful") == false) {
+                            Toast.makeText(LoginActivity.this, response.getString("error"), Toast.LENGTH_LONG).show();
+                        }
+                    } catch (JSONException | NullPointerException e ) {
+                        Log.e(TAG, e.getMessage());
+
+                        // Tracker exception
+                        tracker.send(new HitBuilders.ExceptionBuilder()
+                                .setDescription(String.format("%s:LoginAccount:%s", TAG, e.getLocalizedMessage()))
+                                .setFatal(false)
+                                .build());
+
+                        Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
+                    } finally {
+                        // Hide progress.
+                        Utils.showProgress(false, mLoginFormView, mProgressView);
+                    }
+                }
+            });
+        } catch (JSONException | UnsupportedEncodingException e ) {
+            Log.e(TAG, e.getMessage());
+            Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
         }
     }
 

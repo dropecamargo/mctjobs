@@ -83,7 +83,6 @@ public class NotificationService extends Service {
 
                     final Notification notification = mJob.getNextNotification();
                     if(notification != null) {
-
                         if( notification.getProcessing() == false ) {
 
                             // Set processing true

@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.koiti.mctjobs.Application;
+import com.koiti.mctjobs.BuildConfig;
 import com.koiti.mctjobs.R;
 import com.koiti.mctjobs.adapters.JobAdapter;
 import com.koiti.mctjobs.helpers.Constants;
@@ -26,6 +27,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
@@ -144,9 +146,11 @@ public class JobsFragment extends Fragment {
     }
 
     public void syncJobs() {
-        ByteArrayEntity entity = null;
         try {
-            entity = new ByteArrayEntity(("{\"id_partner\":\"" + mSession.getPartner() + "\"}").getBytes("UTF-8"));
+            JSONObject params = new JSONObject();
+            params.put("id_partner", mSession.getPartner());
+            params.put("version", BuildConfig.VERSION_NAME);
+            ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
 
             AsyncHttpClient client = new AsyncHttpClient();
             client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
@@ -193,7 +197,7 @@ public class JobsFragment extends Fragment {
                     super.onFailure(statusCode, headers, throwable, response);
                 }
             });
-        } catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException | JSONException e) {
             e.printStackTrace();
         }
     }

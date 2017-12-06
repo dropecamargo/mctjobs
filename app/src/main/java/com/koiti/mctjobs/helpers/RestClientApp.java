@@ -2,6 +2,7 @@ package com.koiti.mctjobs.helpers;
 
 import android.content.Context;
 
+import com.koiti.mctjobs.BuildConfig;
 import com.koiti.mctjobs.R;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -142,7 +143,7 @@ public class RestClientApp {
         params.put("terceroCodigo", partner);
         params.put("latitude", latitude);
         params.put("longitude", longitude);
-
+        params.put("version", BuildConfig.VERSION_NAME);
         ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
 
         // Call API Login
@@ -185,5 +186,20 @@ public class RestClientApp {
         client.addHeader("Authorization", "Bearer " + oaut.getString("access_token"));
         client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
         client.post(null, Constants.URL_TERMS_ON_API, entity, "application/json", jsonHttpResponseHandler);
+    }
+
+    public void validCellphone(String phone, JSONObject oaut, JsonHttpResponseHandler jsonHttpResponseHandler) throws JSONException, UnsupportedEncodingException {
+        // Params
+        JSONObject params = new JSONObject();
+        params.put("celular", phone);
+        params.put("version", BuildConfig.VERSION_NAME);
+
+        ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
+
+        // Call API Login
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.addHeader("Authorization", "Bearer " + oaut.getString("access_token"));
+        client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
+        client.post(null, Constants.URL_LOGIN_VALID_PHONE_API, entity, "application/json", jsonHttpResponseHandler);
     }
 }

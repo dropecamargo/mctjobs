@@ -10,6 +10,8 @@ public class Constants {
 
     public static final String URL_LOGIN_API = "http://esb.mct.com.co:8280/services/px_Bp_Login";
 
+    public static final String URL_LOGIN_VALID_PHONE_API = "http://esb.mct.com.co:8280/services/px_ValidaExterno2Login";
+
     public static final String URL_LOGIN_PHONE_API = "http://esb.mct.com.co:8280/services/px_Bp_LoginCell";
 
     public static final String URL_TURN_API = "http://esb.mct.com.co:8280/services/pxEnturnamientobyPosition_secure";
