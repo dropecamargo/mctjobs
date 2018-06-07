@@ -2,8 +2,10 @@ package com.koiti.mctjobs;
 
 import android.content.Intent;
 
+import com.glidebitmappool.GlideBitmapPool;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
+import com.koiti.mctjobs.services.DocumentService;
 import com.koiti.mctjobs.services.NotificationService;
 import com.koiti.mctjobs.services.TrackerGpsService;
 import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
@@ -39,8 +41,12 @@ public class Application extends android.app.Application {
 
         ImageLoader.getInstance().init(config);
 
+        // Glide bitmap pool image
+        GlideBitmapPool.initialize(10 * 1024 * 1024);
+
         // Service notification
         startService(new Intent(this, NotificationService.class));
+        startService(new Intent(this, DocumentService.class));
 
         // Service tracker gps
         startService(new Intent(this, TrackerGpsService.class));

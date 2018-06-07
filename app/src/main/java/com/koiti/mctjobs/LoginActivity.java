@@ -38,11 +38,25 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
@@ -574,7 +588,7 @@ public class LoginActivity extends ActionBarActivity {
 
     public void loginAccount(String account, String password, JSONObject oaut) {
         try {
-            mRestClientApp.loginAccount(account, password, oaut, new JsonHttpResponseHandler() {
+            mRestClientApp.loginAccount(account, Utils.encrypt(password), oaut, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                     // Valid response
@@ -591,6 +605,12 @@ public class LoginActivity extends ActionBarActivity {
                             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                             startActivity(intent);
                             finish();
+                        }else{
+                            JSONObject error = response.getJSONObject("error");
+                            Toast.makeText(LoginActivity.this, error.getString("message"), Toast.LENGTH_LONG).show();
+
+                            // Hide progress.
+                            Utils.showProgress(false, mLoginFormView, mProgressView);
                         }
                     } catch (JSONException | NullPointerException e ) {
                         Log.e(TAG, e.getMessage());
@@ -630,7 +650,8 @@ public class LoginActivity extends ActionBarActivity {
                     }
                 }
             });
-        } catch (JSONException | UnsupportedEncodingException e ) {
+        } catch (JSONException | UnsupportedEncodingException | BadPaddingException | NoSuchPaddingException |
+                InvalidKeyException | NoSuchAlgorithmException | IllegalBlockSizeException e ) {
             Log.e(TAG, e.getMessage());
             Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
         }

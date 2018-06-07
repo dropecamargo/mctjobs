@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.koiti.mctjobs.helpers.GPSTracker;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.models.Image;
@@ -45,6 +46,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+//         System.out.println(FirebaseInstanceId.getInstance().getToken());
 
         // Session
         mSession = new UserSessionManager(this);

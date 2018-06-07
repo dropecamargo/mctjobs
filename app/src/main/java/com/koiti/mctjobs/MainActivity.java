@@ -202,6 +202,21 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
                     }
                 break;
 
+                case Constants.RESULT_REFRESH_DISCARD_ATTENDING:
+                    job = mJob.getJob(data.getIntExtra("JOB", 0));
+                    if(job instanceof Job) {
+                        // Remove job from jobsFragment
+                        if(jobsFragment instanceof JobsFragment) {
+                            jobsFragment.remove(job);
+                        }
+
+                        // Remove job from attendingFragment
+                        if(attendingFragment instanceof AttendingFragment) {
+                            attendingFragment.remove(job);
+                        }
+                    }
+                break;
+
                 case Constants.RESULT_NEXT_STEP:
                     // Refresh attendingFragment
                     if(attendingFragment instanceof AttendingFragment) {

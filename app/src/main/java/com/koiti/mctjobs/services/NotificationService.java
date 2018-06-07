@@ -2,9 +2,6 @@ package com.koiti.mctjobs.services;
 
 import android.app.Service;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -15,7 +12,6 @@ import com.koiti.mctjobs.Application;
 import com.koiti.mctjobs.R;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.RestClientApp;
-import com.koiti.mctjobs.models.Image;
 import com.koiti.mctjobs.models.Notification;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -24,10 +20,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,8 +53,6 @@ public class NotificationService extends Service {
 
     @Override
     public void onCreate() {
-        Log.e(TAG, "Service NotificationService start...");
-
         // Get tracker.
         tracker = ((Application) getApplicationContext()).getTracker();
 
@@ -77,121 +74,29 @@ public class NotificationService extends Service {
             public void run() {
                 try
                 {
-                    // Current date
-                    Date date = new Date();
-                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
                     final Notification notification = mJob.getNextNotification();
                     if(notification != null) {
+                        // System.out.println("Encuentro -> work " + notification.getId_work() + " -> step " + notification.getId_workstep());
                         if( notification.getProcessing() == false ) {
-
-                            // Set processing true
-                            mJob.setProcessing(notification, true);
-
-                            // Diference seconds report
-                            final Date report_date = dateFormat.parse(notification.getReport_date());
-                            long seconds = (date.getTime() - report_date.getTime()) / 1000;
-
-                            JSONObject params = new JSONObject();
-                            params.put("id_user", notification.getId_user());
-                            params.put("id_work", notification.getId_work());
-                            params.put("id_workstep", notification.getId_workstep());
-                            params.put("modify_step", notification.getModify_step());
-                            params.put("id_workphase", notification.getId_workphase());
-                            params.put("modify_phase", notification.getModify_phase());
-                            params.put("sequence", notification.getSequence());
-                            params.put("type", (seconds > 30 ? Notification.type_batch : Notification.type_online));
-                            params.put("report_date", notification.getReport_date());
-                            params.put("send_date", dateFormat.format(date));
-                            params.put("state", notification.getState());
-                            params.put("statebefore", notification.getStatebefore());
-                            params.put("paused", notification.getPaused());
-                            params.put("unpaused", notification.getUnpaused());
-                            params.put("pausetime", notification.getPausetime());
-                            params.put("modifier", "CLIENT");
-                            params.put("latitude", notification.getLatitude() != null ? notification.getLatitude() : JSONObject.NULL);
-                            params.put("longitude", notification.getLongitude() != null ? notification.getLongitude() : JSONObject.NULL);
-                            params.put("message", notification.getMessage());
-                            params.put("tittle", notification.getTittle());
-                            params.put("message_wrote", notification.getMessage_wrote() != null ? notification.getMessage_wrote() : JSONObject.NULL);
-                            params.put("ignored", notification.getIgnored());
-                            params.put("create_action", notification.getCreate_action());
-                            params.put("action", notification.getAction());
-                            params.put("message_action", notification.getMessage_action());
-                            params.put("pictures", notification.getPictures());
-                            params.put("videos", notification.getVideos());
-                            params.put("report_type", notification.getReport_type());
-
-                            // Documents
-                            JSONArray documents = new JSONArray();
-                            if (notification.getDocuments() != null && !notification.getDocuments().isEmpty()) {
-                                JSONArray files = new JSONArray(notification.getDocuments());
-
-                                for (int f = 0; f < files.length(); f++) {
-                                    JSONObject file = (JSONObject) files.get(f);
-                                    // Image
-                                    Bitmap bmImage = null;
-                                    File fileimage = new File(file.getString("content"));
-                                    if(fileimage.exists()) {
-                                        final InputStream imageStream = getApplicationContext().getContentResolver().openInputStream(Uri.fromFile(fileimage));
-                                        bmImage = BitmapFactory.decodeStream(imageStream);
-                                        file.put("content", Image.encodeImage(bmImage));
-                                    }else{
-                                        bmImage = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.not_found);
-                                        file.put("file", "imagenotfound.jpg");
-                                        file.put("content", Image.encodeImage(bmImage));
-                                    }
-                                    documents.put(file);
-
-                                    // Recicle bitmap
-                                    if(bmImage != null) {
-                                        bmImage.recycle();
-                                    }
-                                }
-                            }
-                            params.put("documents", (Object) documents);
-
-                            // Sync report
-                            ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
-                            JsonHttpResponseHandler jsonHttpResponseHandler = new JsonHttpResponseHandler() {
+                            // System.out.println("Ingreso a procesar -> work " + notification.getId_work() + " -> step " + notification.getId_workstep());
+                            mRestClientApp.getSyncAccessToken(new JsonHttpResponseHandler() {
                                 @Override
                                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                    // Log.i(TAG, response.toString());
-                                    mJob.removeNotification(notification);
+                                    sendNotification(notification, response);
                                 }
 
                                 @Override
                                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
-                                    // Log.i(TAG, response.toString());
-                                    try {
-                                        if (response == null) {
-                                            throw new NullPointerException(getApplicationContext().getResources().getString(R.string.on_null_server_exception));
-                                        }
-
-                                        if (response.getBoolean("successful") == false) {
-                                            JSONObject error = response.getJSONObject("error");
-                                            throw new Exception(error.getString("message"));
-                                        }
-                                    } catch (Exception e) {
-                                        Log.e(TAG, e.getMessage());
-
-                                        // Tracker exception
-                                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                                .setFatal(false)
-                                                .build());
-                                    }finally {
-                                        // Set processing false
-                                        mJob.setProcessing(notification, false);
-                                    }
+                                    // Tracker exception
+                                    tracker.send(new HitBuilders.ExceptionBuilder()
+                                            .setDescription(String.format("%s:getSyncAccessToken:%s", TAG, R.string.on_failure_oaut_token))
+                                            .setFatal(false)
+                                            .build());
                                 }
-                            };
-
-                            jsonHttpResponseHandler.setUsePoolThread(true);
-                            mRestClientApp.syncReport(entity, jsonHttpResponseHandler);
+                            });
                         }
                     }
-                }catch (UnsupportedEncodingException | JSONException | ParseException | FileNotFoundException e) {
+                }catch (JSONException | IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException | UnrecoverableKeyException | KeyManagementException e) {
                     Log.e(TAG, e.getLocalizedMessage());
 
                     tracker.send(new HitBuilders.ExceptionBuilder()
@@ -213,5 +118,113 @@ public class NotificationService extends Service {
     public void onDestroy() {
         timerTask.cancel();
         Intent localIntent = new Intent(Constants.ACTION_MEMORY_EXIT);
+    }
+
+    public void sendNotification(final Notification notification, JSONObject oauth) {
+        try
+        {
+            // Current date
+            Date date = new Date();
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            // Set processing true
+            mJob.setProcessing(notification, true);
+
+            // Diference seconds report
+            final Date report_date = dateFormat.parse(notification.getReport_date());
+            long seconds = (date.getTime() - report_date.getTime()) / 1000;
+
+            JSONObject params = new JSONObject();
+            params.put("id_report_app", notification.getId());
+            params.put("id_user", notification.getId_user());
+            params.put("id_work", notification.getId_work());
+            params.put("id_workstep", notification.getId_workstep());
+            params.put("modify_step", notification.getModify_step());
+            params.put("id_workphase", notification.getId_workphase());
+            params.put("modify_phase", notification.getModify_phase());
+            params.put("sequence", notification.getSequence());
+            params.put("type", (seconds > 30 ? Notification.type_batch : Notification.type_online));
+            params.put("report_date", notification.getReport_date());
+            params.put("send_date", dateFormat.format(date));
+            params.put("state", notification.getState());
+            params.put("statebefore", notification.getStatebefore());
+            params.put("paused", notification.getPaused());
+            params.put("unpaused", notification.getUnpaused());
+            params.put("pausetime", notification.getPausetime());
+            params.put("modifier", "CLIENT");
+            params.put("latitude", notification.getLatitude() != null ? notification.getLatitude() : JSONObject.NULL);
+            params.put("longitude", notification.getLongitude() != null ? notification.getLongitude() : JSONObject.NULL);
+            params.put("message", notification.getMessage());
+            params.put("tittle", notification.getTittle());
+            params.put("message_wrote", notification.getMessage_wrote() != null ? notification.getMessage_wrote() : JSONObject.NULL);
+            params.put("ignored", notification.getIgnored());
+            params.put("create_action", notification.getCreate_action());
+            params.put("action", notification.getAction());
+            params.put("message_action", notification.getMessage_action());
+            params.put("pictures", notification.getPictures());
+            params.put("videos", notification.getVideos());
+            params.put("report_type", notification.getReport_type());
+
+            // Documents
+            JSONArray documents = new JSONArray();
+            if (notification.getDocuments() != null && !notification.getDocuments().isEmpty()) {
+                JSONArray files = new JSONArray(notification.getDocuments());
+                for (int f = 0; f < files.length(); f++) {
+                    JSONObject  file = (JSONObject) files.get(f);
+                    documents.put(file);
+                }
+            }
+            params.put("documents", (Object) documents);
+
+            // Sync report
+            ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
+            JsonHttpResponseHandler jsonHttpResponseHandler = new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    // System.out.println("onSuccess -> " + response.toString());
+                    mJob.removeNotification(notification);
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+                    // System.out.println("onFailure -> " + response);
+                    try {
+                        if (response == null) {
+                            throw new NullPointerException(getApplicationContext().getResources().getString(R.string.on_null_server_exception));
+                        }
+
+                        if (response.getBoolean("successful") == false) {
+                            JSONObject error = response.getJSONObject("error");
+                            throw new Exception(error.getString("message"));
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, e.getMessage());
+
+                        // Tracker exception
+                        tracker.send(new HitBuilders.ExceptionBuilder()
+                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
+                                .setFatal(false)
+                                .build());
+                    }finally {
+                        // Set processing false
+                        mJob.setProcessing(notification, false);
+                    }
+                }
+            };
+
+            jsonHttpResponseHandler.setUsePoolThread(true);
+            mRestClientApp.syncReport(entity, oauth, jsonHttpResponseHandler);
+
+        }catch (JSONException | ParseException | UnsupportedEncodingException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+
+            tracker.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
+                    .setFatal(false)
+                    .build());
+
+            // Reset processing
+            mJob.resetProcessing();
+        }
     }
 }

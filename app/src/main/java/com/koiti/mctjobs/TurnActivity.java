@@ -101,6 +101,7 @@ public class TurnActivity extends ActionBarActivity {
         // Check user login
         if(mSession.checkLogin()) {
             finish();
+            return;
         }
 
         gps = new GPSTracker(this);
@@ -217,8 +218,9 @@ public class TurnActivity extends ActionBarActivity {
                             throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
                         }
 
-                        if( response.getBoolean("sucessfull") == false) {
-                            Toast.makeText(TurnActivity.this, response.getString("msg"), Toast.LENGTH_LONG).show();
+                        JSONObject data = response.getJSONObject("data");
+                        if( !data.getString("mensaje").isEmpty() ) {
+                            Toast.makeText(TurnActivity.this, data.getString("mensaje"), Toast.LENGTH_LONG).show();
                         }
                     } catch (JSONException | NullPointerException e ) {
                         Log.e(TAG, e.getMessage());
@@ -254,6 +256,13 @@ public class TurnActivity extends ActionBarActivity {
             // Data form
             JSONObject data = response.getJSONObject("data");
             Boolean sucessfull = response.getBoolean("sucessfull");
+            Boolean close_session = response.getBoolean("close_session");
+
+            // Valid response close session
+            if(close_session) {
+                mSession.logout();
+                return;
+            }
 
             // Vehicle
             JSONObject datavehicle = data.getJSONObject("datavehicle");

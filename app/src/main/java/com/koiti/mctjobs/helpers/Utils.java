@@ -8,9 +8,22 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Base64;
 import android.view.View;
 
 import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class Utils {
 
@@ -61,5 +74,14 @@ public class Utils {
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
+    }
+
+    public static String encrypt(String cadena) throws UnsupportedEncodingException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException {
+        Key key = new SecretKeySpec("MCTSASKEYAES128B".getBytes("UTF-8"), "AES");
+        Cipher chiper = Cipher.getInstance("AES");
+        chiper.init(Cipher.ENCRYPT_MODE, key);
+        byte[] encVal = chiper.doFinal(cadena.getBytes());
+        byte[] encryptedValue = Base64.encode(encVal, Base64.DEFAULT);
+        return new String(encryptedValue);
     }
 }

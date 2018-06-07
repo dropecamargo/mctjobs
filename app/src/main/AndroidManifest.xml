@@ -48,9 +48,25 @@
 
         <service android:name="com.google.android.gms.analytics.CampaignTrackingService" />
 
+        <!-- Firebase_service -->
+        <service android:name=".services.MessagingFirebaseService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name=".services.InstanceFirebaseIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
         <!-- Notification services -->
         <service
             android:name=".services.NotificationService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
+            android:name=".services.DocumentService"
             android:enabled="true"
             android:exported="false" />
         <service
@@ -66,11 +82,16 @@
         <activity
             android:name=".StepActivity"
             android:configChanges="screenSize|orientation"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="INTENT_WORK" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ReportActivity"
             android:configChanges="screenSize|orientation"
-            android:theme="@style/AppTheme"/>
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".LoginActivity"
             android:configChanges="screenSize|orientation"
@@ -79,7 +100,21 @@
         <activity
             android:name=".TurnActivity"
             android:configChanges="screenSize|orientation"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="INTENT_TURN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".NotificationActivity"
+            android:configChanges="screenSize|orientation"
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="INTENT_MESSAGE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".TermsActivity"
             android:configChanges="screenSize|orientation"
@@ -91,11 +126,12 @@
         <activity
             android:name=".HomeActivity"
             android:configChanges="screenSize|orientation"
-            android:theme="@style/MainTheme" >
+            android:theme="@style/MainTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
+
 </manifest>

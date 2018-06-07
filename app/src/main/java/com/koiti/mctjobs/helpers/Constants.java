@@ -4,11 +4,15 @@ public class Constants {
 
     public static final String URL_OAUTH_TOKEN = "https://esb.mct.com.co:9446/oauth2/token";
 
-    public static final String URL_GET_WORKS_API = "http://esb.mct.com.co:8280/services/pxBplWorksPartner_noSecure";
+    public static final String URL_GET_WORKS_API = "http://esb.mct.com.co:8280/services/pxBplWorksPartner";
 
-    public static final String URL_POST_REPORT_API = "http://esb.mct.com.co:8280/services/px_NosecureBplNotificationService";
+    public static final String URL_GET_WORK_API = "http://esb.mct.com.co:8280/services/pxDetailsWork";
 
-    public static final String URL_LOGIN_API = "http://esb.mct.com.co:8280/services/px_Bp_Login";
+    public static final String URL_POST_REPORT_API = "http://esb.mct.com.co:8280/services/pxBplNotificationService";
+
+    public static final String URL_POST_DOCUMENT_API = "http://esb.mct.com.co:8280/services/pxImagesForReport";
+
+    public static final String URL_LOGIN_API = "http://esb.mct.com.co:8280/services/px_Bp_LoginEncry";
 
     public static final String URL_LOGIN_VALID_PHONE_API = "http://esb.mct.com.co:8280/services/px_ValidaExterno2Login";
 
@@ -20,9 +24,19 @@ public class Constants {
 
     public static final String URL_TERMS_ON_API = "http://esb.mct.com.co:8280/services/proxy_registrypolicydata";
 
+    public static final String URL_TOKEN_PUSH_API = "http://esb.mct.com.co:8280/services/pxcrearToken";
+
     public static final String URL_POST_SEND_SMS_VERIFICATION = "https://api.authy.com/protected/json/phones/verification/start";
 
     public static final String URL_GET_CHECK_VERIFICATION = "https://api.authy.com/protected/json/phones/verification/check";
+
+    public static final String OAUTH_USERNAME = "appworks";
+
+    public static final String OAUTH_PASSWORD = "appworks";
+
+    public static final String OAUTH_GRANT_TYPE = "password";
+
+    public static final String OAUTH_AUTHORIZATION = "Basic WkZXRncyc1B2OGZON09SeVBzalc0NGVROUIwYTpMdUdSVXNFazNkb29zQVg3d1o3UVEzWTVQeGth";
 
     public static final int TURN_ANY_DESTINATION = 99;
 
@@ -46,6 +60,10 @@ public class Constants {
 
     public final static int RESULT_FINISHED = 19;
 
+    public final static int RESULT_DISCARD = 20;
+
+    public final static int RESULT_REFRESH_DISCARD_ATTENDING = 21;
+
     public static final  String GALLERY_NAME = "Mct";
 
     public static final String JPEG_FILE_SUFFIX = ".jpg";
@@ -53,6 +71,8 @@ public class Constants {
     public static final int DEFAULT_MAX_RETRIES = 3;
 
     public static final int DEFAULT_TIMEOUT = 1000;
+
+    public static final int INTENT_CLOSE_WORK = 508;
 
     public static final int INTENT_REPORT = 1;
 
@@ -63,6 +83,8 @@ public class Constants {
     public static final int INTENT_UNPAUSE = 4;
 
     public static final int INTENT_CANCEL = 5;
+
+    public static final int INTENT_DISCARD = 6;
 
     public static final int PRIVATE_MODE = 0;
 

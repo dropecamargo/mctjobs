@@ -1,7 +1,5 @@
 package com.koiti.mctjobs.models;
 
-import com.koiti.mctjobs.sqlite.DataBaseManagerNotification;
-
 public class Notification {
 
     private int id;

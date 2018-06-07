@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +31,7 @@ import com.koiti.mctjobs.helpers.GPSTracker;
 import com.koiti.mctjobs.helpers.GalleryData;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.helpers.Utils;
+import com.koiti.mctjobs.models.Discard;
 import com.koiti.mctjobs.models.Image;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.models.Report;
@@ -139,13 +141,22 @@ public class ReportActivity extends ActionBarActivity {
         message_step.setText(step.getMessage());
 
         // Textarea
-        if(step.getTextarea() || Arrays.asList(new Integer[]{ Constants.INTENT_REPORT, Constants.INTENT_CANCEL }).contains( action )) {
+        if(step.getTextarea() || Arrays.asList(new Integer[]{ Constants.INTENT_REPORT, Constants.INTENT_CANCEL, Constants.INTENT_DISCARD }).contains( action )) {
             text_step.setVisibility(View.VISIBLE);
             edit_step.setVisibility(View.VISIBLE);
         }
 
-        // Spinner
-        ArrayList<Report> reportList = mJob.getReporsList(step);
+        // Spinner, Spinner discard types
+        ArrayList<Report> reportList;
+        switch ( action ) {
+            case Constants.INTENT_DISCARD:
+                reportList = mJob.getDiscardList(job);
+                break;
+            default:
+                reportList = mJob.getReporsList(step);
+                break;
+        }
+
         if(reportList.size() > 0) {
             ArrayAdapter<Report> adapter = new ArrayAdapter<Report>(this, android.R.layout.simple_spinner_item, reportList);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -157,7 +168,7 @@ public class ReportActivity extends ActionBarActivity {
 
         // Info
         if( Arrays.asList(new Integer[]{ Constants.INTENT_IGNORE, Constants.INTENT_PAUSE, Constants.INTENT_UNPAUSE,
-                Constants.INTENT_REPORT, Constants.INTENT_CANCEL }).contains( action )  )
+                Constants.INTENT_REPORT, Constants.INTENT_CANCEL, Constants.INTENT_DISCARD }).contains( action )  )
         {
             info_step.setVisibility(View.VISIBLE);
             switch ( action ) {
@@ -188,6 +199,11 @@ public class ReportActivity extends ActionBarActivity {
                 case Constants.INTENT_CANCEL:
                     info_step.setText(R.string.text_cancel);
                     report_step.setText(R.string.job_cancel_title);
+                    break;
+
+                case Constants.INTENT_DISCARD:
+                    info_step.setText(R.string.text_discard);
+                    report_step.setText(R.string.job_discard_title);
                     break;
             }
         }
@@ -255,9 +271,9 @@ public class ReportActivity extends ActionBarActivity {
 
             // Message wrote textarea
             String text_wrote = null;
-             if( step.getTextarea() || Arrays.asList(new Integer[]{ Constants.INTENT_REPORT, Constants.INTENT_CANCEL }).contains( action ) ) {
+             if( step.getTextarea() || Arrays.asList(new Integer[]{ Constants.INTENT_REPORT, Constants.INTENT_CANCEL, Constants.INTENT_DISCARD }).contains( action ) ) {
                 text_wrote = edit_step.getText().toString();
-                if( (step.getTextareamandatory() || Arrays.asList(new Integer[]{ Constants.INTENT_REPORT, Constants.INTENT_CANCEL }).contains( action ))
+                if( (step.getTextareamandatory() || Arrays.asList(new Integer[]{ Constants.INTENT_REPORT, Constants.INTENT_CANCEL, Constants.INTENT_DISCARD }).contains( action ))
                         && text_wrote.isEmpty() ) {
                     Toast.makeText(this, R.string.text_required, Toast.LENGTH_LONG).show();
                     return;
@@ -266,7 +282,7 @@ public class ReportActivity extends ActionBarActivity {
             final String message_wrote = text_wrote;
 
             // Images
-            if( step.getPhotosmandatory() && !Arrays.asList(new Integer[]{ Constants.INTENT_REPORT, Constants.INTENT_CANCEL }).contains( action )
+            if( step.getPhotosmandatory() && !Arrays.asList(new Integer[]{ Constants.INTENT_REPORT, Constants.INTENT_CANCEL, Constants.INTENT_DISCARD }).contains( action )
                     && gallery_images.size() == 0 ){
                 Toast.makeText(this, R.string.photo_required, Toast.LENGTH_LONG).show();
                 return;
@@ -278,6 +294,10 @@ public class ReportActivity extends ActionBarActivity {
             if( Arrays.asList(new Integer[]{ Constants.INTENT_CANCEL }).contains(action) ) {
                 title = getResources().getString(R.string.job_cancel_title);
                 message = getResources().getString(R.string.job_cancel_message);
+
+            }else if( Arrays.asList(new Integer[]{ Constants.INTENT_DISCARD }).contains(action) ) {
+                title = getResources().getString(R.string.job_discard_title);
+                message = getResources().getString(R.string.job_discard_message);
 
             }else if( Arrays.asList(new Integer[]{ Constants.INTENT_PAUSE }).contains(action) ) {
                 if( step.getPaused() ) {
@@ -312,6 +332,17 @@ public class ReportActivity extends ActionBarActivity {
                             // Set RESULT_NEXT_STEP
                             result = Constants.RESULT_CANCEL;
 
+                        // Descartar
+                        }else if( Arrays.asList(new Integer[]{ Constants.INTENT_DISCARD }).contains( action )) {
+                            mJob.changeStatus(job.getId(), "DESCARTADA");
+
+                            // Sync report cancel
+                            mJob.storeNotification(job, step, mSession.getPartner(), false, date, "DESCARTADA",
+                                    false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images);
+
+                            // Set RESULT_NEXT_STEP
+                            result = Constants.RESULT_DISCARD;
+
                         // Pause
                         }else if( Arrays.asList(new Integer[]{ Constants.INTENT_PAUSE }).contains( action )) {
                             // Set pause
@@ -338,7 +369,7 @@ public class ReportActivity extends ActionBarActivity {
                             result = Constants.RESULT_NEXT_STEP;
 
                         // Novedad
-                        }else if( Arrays.asList(new Integer[]{ Constants.INTENT_REPORT }).contains( action )) {
+                        }else if( Arrays.asList(new Integer[]{ Constants.INTENT_REPORT }).contains( action ) ) {
                             // Sync report step
                             mJob.storeNotification(job, step, mSession.getPartner(), false, date, job.getState(),
                                     false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images);
@@ -355,13 +386,15 @@ public class ReportActivity extends ActionBarActivity {
                             mJob.increaseStep(job.getId());
 
                             // Sync report step
-                            mJob.storeNotification(job, step, mSession.getPartner(), true, date, (mJob.exitNextStep(job) ? job.getState() : "FINALIZADA"),
+                            mJob.storeNotification(job, step, mSession.getPartner(), true, date, ((!mJob.exitNextStep(job) || Arrays.asList(new Integer[]{ Constants.INTENT_CLOSE_WORK }).contains(reporttype.getId())) ? "FINALIZADA" : job.getState()),
                                     false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images);
 
                             // Set RESULT_NEXT_STEP
                             result = Constants.RESULT_NEXT_STEP;
 
-                            if(!mJob.exitNextStep(job)) {
+                            // Last step or type close work
+                            if(!mJob.exitNextStep(job) || Arrays.asList(new Integer[]{ Constants.INTENT_CLOSE_WORK }).contains( reporttype.getId() ))
+                            {
                                 mJob.changeStatus(job.getId(), "FINALIZADA");
 
                                 // Set RESULT_NEXT_STEP
@@ -378,6 +411,8 @@ public class ReportActivity extends ActionBarActivity {
                         nextStep();
 
                     }catch (Exception e) {
+                        Log.e(TAG, e.getMessage());
+
                         tracker.send(new HitBuilders.ExceptionBuilder()
                                 .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
                                 .setFatal(false)

@@ -21,6 +21,7 @@
     <string name="action_pause">Pausar</string>
     <string name="action_unpause">Despausar</string>
     <string name="action_ignore">Ignorar</string>
+    <string name="action_discard">Descartar</string>
     <string name="action_report">Novedad</string>
     <string name="action_refresh">Actualizar</string>
     <string name="action_step">Reportar</string>
@@ -33,6 +34,8 @@
     <string name="action_gps_title">Geolocalización desactivada</string>
     <string name="action_gps_message">Mct necesita acceso a tu ubicación. Activa los servicios de geolocalización.</string>
 
+    <string name="notification_title">Notificación</string>
+
     <!-- Jobs -->
     <string name="job_cancel_title">Cancelar trabajo</string>
     <string name="job_cancel_message">¿Estas seguro de cancelar este trabajo, una vez cancelado este trabajo no podrás recuperarlo?</string>
@@ -40,6 +43,8 @@
     <string name="job_pause_message">¿Estas seguro de pausar este trabajo?</string>
     <string name="job_unpause_title">Despausar trabajo</string>
     <string name="job_unpause_message">¿Estas seguro de continuar este trabajo?</string>
+    <string name="job_discard_title">Descartar trabajo</string>
+    <string name="job_discard_message">¿Estas seguro de descartar este trabajo, una vez descartado este trabajo no podrás recuperarlo?</string>
 
     <string name="job_start_title">Aceptar trabajo</string>
     <string name="job_start_message">¿Estas seguro de aceptar este trabajo?</string>
@@ -55,6 +60,7 @@
     <string name="photo_required">Por favor ingrese al menos una imagen.</string>
 
     <string name="text_cancel">Va a RECHAZAR el trabajo</string>
+    <string name="text_discard">Va a DESCARTAR el trabajo</string>
     <string name="text_pause">Va a PAUSAR la tarea</string>
     <string name="text_unpause">Va a CONTINUAR la tarea</string>
     <string name="text_ignore">Va a OMITIR la tarea</string>
@@ -71,12 +77,13 @@
     <string name="instructions_successful">¡Instrucciones solicitadas, en un momento estaremos en contacto!</string>
 
     <!-- Exceptions -->
+    <string name="on_failure_oaut_token">Ocurrió un error, recuperando token.</string>
     <string name="on_failure_sync_jobs">Ocurrió un error, por favor vuelva a intentarlo.</string>
     <string name="on_failure">Ocurrió un error, por favor vuelva a intentarlo.</string>
     <string name="on_null_pointer_exception">Ups&#8230; Al parecer ocurrio un error, por favor vuelva a intentarlo.</string>
     <string name="on_null_server_exception">TimeoutException, No hay respuesta del servidor (response body is null).</string>
     <string name="on_null_server_twilio_exception">TimeoutException Twilio, No hay respuesta del servidor (response body is null).</string>
-    <string name="on_host_exception">La conexión con los servidores de MCT ha fallado. Revisa conexión de red o vuelve a intentarlo más tarde.</string>
+    <string name="on_host_exception">La conexión de trasmisión de datos ha fallado. Revisa red de datos y/o wifi y vuelve a intentarlo más tarde.</string>
     <string name="on_failure_offices">Ocurrió un error recuperando oficinas, por favor vuelva a intentarlo o comuníquese con el administrador.</string>
     <string name="state_undefined">Estado de trabajo no identificado, por favor vuelva a intentarlo.</string>
     <string name="action_undefined">Acción no identificada, por favor vuelva a intentarlo.</string>

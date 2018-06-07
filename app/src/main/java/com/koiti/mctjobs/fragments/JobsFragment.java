@@ -7,6 +7,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.system.ErrnoException;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,12 +16,16 @@ import android.widget.Toast;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.koiti.mctjobs.Application;
 import com.koiti.mctjobs.BuildConfig;
+import com.koiti.mctjobs.LoginActivity;
 import com.koiti.mctjobs.R;
 import com.koiti.mctjobs.adapters.JobAdapter;
 import com.koiti.mctjobs.helpers.Constants;
+import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
+import com.koiti.mctjobs.helpers.Utils;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
 import com.loopj.android.http.AsyncHttpClient;
@@ -30,13 +35,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
 import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
 import cz.msebera.android.httpclient.entity.ByteArrayEntity;
 
 /**
@@ -46,6 +58,8 @@ public class JobsFragment extends Fragment {
 
     private static final String TAG = JobsFragment.class.getSimpleName();
     private static final String KEY_LAYOUT_MANAGER = "layoutJobsManager";
+
+    private RestClientApp mRestClientApp;
 
     private List<Job> jobList = new ArrayList<>();
     private SwipeRefreshLayout swipeContainer;
@@ -58,6 +72,9 @@ public class JobsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_jobs, container, false);
+
+        // Rest client
+        mRestClientApp = new RestClientApp(getActivity().getApplicationContext());
 
         // Session
         mSession = new UserSessionManager(getActivity().getApplicationContext());
@@ -147,13 +164,44 @@ public class JobsFragment extends Fragment {
 
     public void syncJobs() {
         try {
+            mRestClientApp.getAccessToken(new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    getJobs(response);
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+                    onFailureAccessToken(throwable, response);
+                }
+            });
+        } catch (JSONException | IOException | NoSuchAlgorithmException | KeyManagementException | UnrecoverableKeyException |
+                CertificateException | KeyStoreException e ) {
+            Log.e(TAG, e.getMessage());
+
+            // Tracker exception
+            tracker.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
+                    .setFatal(false)
+                    .build());
+
+            Toast.makeText(getActivity(), R.string.on_failure, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void getJobs(JSONObject oaut)
+    {
+        try {
             JSONObject params = new JSONObject();
             params.put("id_partner", mSession.getPartner());
             params.put("version", BuildConfig.VERSION_NAME);
+            params.put("token", FirebaseInstanceId.getInstance().getToken());
+
             ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
 
             AsyncHttpClient client = new AsyncHttpClient();
             client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
+            client.addHeader("Authorization", "Bearer " + oaut.getString("access_token"));
 
             client.post(null, Constants.URL_GET_WORKS_API, entity, "application/json", new JsonHttpResponseHandler() {
                 @Override
@@ -164,7 +212,6 @@ public class JobsFragment extends Fragment {
                             JSONObject data = response.getJSONObject("data");
                             JSONArray works = data.getJSONArray("works");
 
-                            // Parse and insert Jobs
                             mJob.parseJobs(works);
 
                             // Transaction successful
@@ -191,10 +238,28 @@ public class JobsFragment extends Fragment {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
-                    // Load adapter list
-                    loadList();
+                    try {
+                        if (response == null) {
+                            throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
+                        }
 
-                    super.onFailure(statusCode, headers, throwable, response);
+                        // Show error
+                        JSONObject error = response.getJSONObject("error");
+                        if( !error.equals(null) && !error.equals("") ) {
+                            Toast.makeText(getActivity(), error.getString("message"), Toast.LENGTH_LONG).show();
+                        }
+                    }catch (Exception e) {
+                        Toast.makeText(getActivity(), R.string.on_host_exception, Toast.LENGTH_LONG).show();
+
+                        // Tracker exception
+                        tracker.send(new HitBuilders.ExceptionBuilder()
+                                .setDescription(String.format("%s:getJobs:%s", TAG, e.getLocalizedMessage()))
+                                .setFatal(false)
+                                .build());
+                    }finally {
+                        // Load adapter list
+                        loadList();
+                    }
                 }
             });
         } catch (UnsupportedEncodingException | JSONException e) {
@@ -216,6 +281,36 @@ public class JobsFragment extends Fragment {
                 mRecyclerView.setAdapter(mAdapter);
                 mAdapter.notifyDataSetChanged();
             }
+        }
+    }
+
+    public void onFailureAccessToken(Throwable throwable, JSONObject response) {
+        try {
+            if (response == null) {
+                throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
+            }
+
+            // Connect timeout exception
+            if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+                Toast.makeText(getActivity(), R.string.on_host_exception, Toast.LENGTH_LONG).show();
+            }
+
+            // Show error
+            String error = response.getString("error_description");
+            if( !error.isEmpty() && !error.equals(null) && !error.equals("") ) {
+                Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
+            }
+        }catch (Exception e) {
+            Toast.makeText(getActivity(), R.string.on_host_exception, Toast.LENGTH_LONG).show();
+
+            // Tracker exception
+            tracker.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
+                    .setFatal(false)
+                    .build());
+        }finally {
+            // Load adapter list
+            loadList();
         }
     }
 }

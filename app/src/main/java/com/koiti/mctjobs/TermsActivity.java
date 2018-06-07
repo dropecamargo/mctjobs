@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.helpers.Utils;
@@ -74,6 +75,16 @@ public class TermsActivity extends AppCompatActivity {
 
         // Get Remote Config instance.
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+
+        // Create a Remote Config Setting to enable developer mode, which you can use to increase
+        // the number of fetches available per hour during development. See Best Practices in the
+        // [START enable_dev_mode]
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setDeveloperModeEnabled(BuildConfig.DEBUG).build();
+        mFirebaseRemoteConfig.setConfigSettings(configSettings);
+
+        // [START set_default_values]
+        mFirebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
 
         // References
         mProgressView = findViewById(R.id.progress_view);

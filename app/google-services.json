@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "748734359290",
-    "project_id": "mct-movil"
+    "firebase_url": "https://mct-movil.firebaseio.com",
+    "project_id": "mct-movil",
+    "storage_bucket": "mct-movil.appspot.com"
   },
   "client": [
     {
@@ -11,7 +13,24 @@
           "package_name": "com.koiti.mctjobs"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "748734359290-mdqmks708h3736k8l95sm1icr6d85gs2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.koiti.mctjobs",
+            "certificate_hash": "653a93de5b40cc8c37016312d8a3930ecbadac5f"
+          }
+        },
+        {
+          "client_id": "748734359290-1eshqvs8h5o4b4lj5tsb0a81tecsopo5.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "748734359290-37ps4390rb1lq0lg7survbqki5bfumdp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCeMwZj7zruJWxAwFnfGHqtpZl3hzXvxcc"
@@ -29,7 +48,7 @@
           "other_platform_oauth_client": []
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }
