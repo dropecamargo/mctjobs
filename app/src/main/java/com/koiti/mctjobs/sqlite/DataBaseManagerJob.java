@@ -718,6 +718,37 @@ public class DataBaseManagerJob extends DataBaseManager {
                 DataBaseManagerDocument.DocumentContract.KEY_ID + "=" + document.getId(), null);
     }
 
+    public void removeOldJobs(String date) {
+
+        Cursor cursor = super.getDb().rawQuery(
+            " SELECT " + JobContract.KEY_ID
+            + ", DATETIME(" + JobContract.KEY_CREATED + "), " + JobContract.KEY_CREATED
+            + ", " + JobContract.KEY_STATE
+            + " FROM " + JobContract.TABLE
+            + " WHERE " + JobContract.KEY_STATE + " IN ('FINALIZADA', 'RECHAZADA', 'DESCARTADA') "
+            + " AND DATETIME(" + JobContract.KEY_CREATED + ") <= '" + date + "'"
+            + " AND " + JobContract.KEY_ID_USER + " = " + mSession.getPartner()
+            , null);
+
+        if(cursor.getCount() > 0) {
+            while (cursor.moveToNext())
+            {
+                // System.out.println(" ID -> " + cursor.getInt(0) + " DATE -> " + cursor.getString(1) + " ORI -> " + cursor.getString(2) + " STA -> " + cursor.getString(3));
+                super.getDb().delete(DataBaseManagerDiscardType.DiscardContract.TABLE,
+                        DataBaseManagerDiscardType.DiscardContract.KEY_ID_WORK + "=" + cursor.getInt(0), null);
+
+                super.getDb().delete(DataBaseManagerReportType.ReportContract.TABLE,
+                        DataBaseManagerReportType.ReportContract.KEY_ID_WORK + "=" + cursor.getInt(0), null);
+
+                super.getDb().delete(DataBaseManagerStep.StepContract.TABLE,
+                        DataBaseManagerStep.StepContract.KEY_ID_WORK + "=" + cursor.getInt(0), null);
+
+                super.getDb().delete(JobContract.TABLE,
+                        JobContract.KEY_ID + "=" + cursor.getInt(0), null);
+            }
+        }
+    }
+
     public static interface JobContract {
         public static final String TABLE = "jobs";
         public static final String KEY_ID = "_id";

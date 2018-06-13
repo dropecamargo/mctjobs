@@ -281,6 +281,7 @@ public class RestClientApp {
         JSONObject params = new JSONObject();
         params.put("id_work", job);
         params.put("id_partner", job);
+        params.put("android_id", Secure.getString(this.context.getContentResolver(), Secure.ANDROID_ID));
 
         ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
 

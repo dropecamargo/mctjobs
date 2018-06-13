@@ -22,9 +22,9 @@ public class Constants {
 
     public static final String URL_TURN_ON_API = "http://esb.mct.com.co:8280/services/pxcreaEnturnamientoGPS";
 
-    public static final String URL_TERMS_ON_API = "http://esb.mct.com.co:8280/services/proxy_registrypolicydata";
+    public static final String URL_TERMS_ON_API = "http://esb.mct.com.co:8280/services/proxy_secureregistrypolicydata";
 
-    public static final String URL_TOKEN_PUSH_API = "http://esb.mct.com.co:8280/services/pxcrearToken";
+    public static final String URL_TOKEN_PUSH_API = "http://esb.mct.com.co:8280/services/px_securecrearToken";
 
     public static final String URL_POST_SEND_SMS_VERIFICATION = "https://api.authy.com/protected/json/phones/verification/start";
 

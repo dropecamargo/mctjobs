@@ -6,6 +6,7 @@ import com.glidebitmappool.GlideBitmapPool;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
 import com.koiti.mctjobs.services.DocumentService;
+import com.koiti.mctjobs.services.MaintenanceService;
 import com.koiti.mctjobs.services.NotificationService;
 import com.koiti.mctjobs.services.TrackerGpsService;
 import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
@@ -50,6 +51,9 @@ public class Application extends android.app.Application {
 
         // Service tracker gps
         startService(new Intent(this, TrackerGpsService.class));
+
+        // Service maintenance
+        startService(new Intent(this, MaintenanceService.class));
     }
 
     /**

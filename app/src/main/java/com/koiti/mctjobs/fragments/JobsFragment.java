@@ -1,6 +1,7 @@
 package com.koiti.mctjobs.fragments;
 
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -194,6 +195,7 @@ public class JobsFragment extends Fragment {
         try {
             JSONObject params = new JSONObject();
             params.put("id_partner", mSession.getPartner());
+            params.put("android_id", Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.ANDROID_ID));
             params.put("version", BuildConfig.VERSION_NAME);
             params.put("token", FirebaseInstanceId.getInstance().getToken());
 

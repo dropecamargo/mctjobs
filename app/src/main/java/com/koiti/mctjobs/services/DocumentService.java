@@ -154,13 +154,13 @@ public class DocumentService extends Service {
             JsonHttpResponseHandler jsonHttpResponseHandler = new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                     System.out.println("onSuccess -> " + response.toString());
+                    // System.out.println("onSuccess -> " + response.toString());
                     mJob.removeDocument(document);
                 }
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
-                     System.out.println("onFailure -> " + response);
+                    // System.out.println("onFailure -> " + response);
                     try {
                         if (response == null) {
                             throw new NullPointerException(getApplicationContext().getResources().getString(R.string.on_null_server_exception));

@@ -74,6 +74,12 @@
             android:enabled="true"
             android:exported="false" />
 
+        <!-- Maintenance services -->
+        <service
+            android:name=".services.MaintenanceService"
+            android:enabled="true"
+            android:exported="false" />
+
         <!-- Activitys -->
         <activity
             android:name=".MainActivity"

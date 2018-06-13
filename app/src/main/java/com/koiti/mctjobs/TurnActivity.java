@@ -253,18 +253,16 @@ public class TurnActivity extends ActionBarActivity {
                 throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
             }
 
-            // Data form
-            JSONObject data = response.getJSONObject("data");
-            Boolean sucessfull = response.getBoolean("sucessfull");
-            Boolean close_session = response.getBoolean("close_session");
-
             // Valid response close session
+            Boolean close_session = response.getBoolean("close_session");
             if(close_session) {
                 mSession.logout();
                 return;
             }
 
-            // Vehicle
+            // Data form
+            Boolean sucessfull = response.getBoolean("sucessfull");
+            JSONObject data = response.getJSONObject("data");
             JSONObject datavehicle = data.getJSONObject("datavehicle");
             String placa = datavehicle.getString("placa");
             String clase = datavehicle.getString("clase");
