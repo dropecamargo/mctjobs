@@ -9,7 +9,7 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
 
     private static final String TAG = DatabaseHelpher.class.getSimpleName();
     private static final String DB_NAME = "mctjobs.db";
-    private static int DB_SCHEME_VERSION = 6;
+    private static int DB_SCHEME_VERSION = 7;
 
     public DatabaseHelpher(Context context) {
         super(context, DB_NAME, null, DB_SCHEME_VERSION);
@@ -23,6 +23,7 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
         db.execSQL(DataBaseManagerDiscardType.CREATE_TABLE);
         db.execSQL(DataBaseManagerNotification.CREATE_TABLE);
         db.execSQL(DataBaseManagerDocument.CREATE_TABLE);
+        db.execSQL(DatabaseManagerPhase.CREATE_TABLE);
 
         Log.d(TAG,"Base de Datos Creada "+DatabaseHelpher.DB_NAME);
     }
@@ -73,6 +74,15 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
         }
         if (oldVersion < 6) {
             db.execSQL(DataBaseManagerDocument.CREATE_TABLE);
+        }
+        if (oldVersion < 7) {
+            db.execSQL(DatabaseManagerPhase.CREATE_TABLE);
+
+            db.execSQL("ALTER TABLE " + DataBaseManagerJob.JobContract.TABLE + " ADD COLUMN "
+                    + DataBaseManagerJob.JobContract.KEY_NEXTSTEP + " INTEGER;");
+
+            db.execSQL("ALTER TABLE " + DataBaseManagerNotification.NotificationContract.TABLE + " ADD COLUMN "
+                    + DataBaseManagerNotification.NotificationContract.KEY_ID_STEP_NEW + " INTEGER;");
         }
     }
 

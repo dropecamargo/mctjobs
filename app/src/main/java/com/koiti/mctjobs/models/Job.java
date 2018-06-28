@@ -15,6 +15,7 @@ public class Job {
     private Boolean pendingsync;
     private Integer amountsteps;
     private Integer currentstep;
+    private Integer nextstep;
 
     public Job(int id) {
         this.id = id;
@@ -130,5 +131,13 @@ public class Job {
 
     public void setCurrentstep(Integer currentstep) {
         this.currentstep = currentstep;
+    }
+
+    public Integer getNextstep() {
+        return nextstep;
+    }
+
+    public void setNextstep(Integer nextstep) {
+        this.nextstep = nextstep;
     }
 }

@@ -11,6 +11,7 @@ import com.koiti.mctjobs.models.Document;
 import com.koiti.mctjobs.models.Image;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.models.Notification;
+import com.koiti.mctjobs.models.Phase;
 import com.koiti.mctjobs.models.Report;
 import com.koiti.mctjobs.models.Step;
 
@@ -48,6 +49,7 @@ public class DataBaseManagerJob extends DataBaseManager {
             + JobContract.KEY_ABSTRACT + " TEXT,"
             + JobContract.KEY_DETAILS + " TEXT,"
             + JobContract.KEY_AMOUNTSTEPS + " INTEGER,"
+            + JobContract.KEY_NEXTSTEP + " INTEGER,"
             + JobContract.KEY_CURRENTSTEP + " INTEGER" + ")";
 
     public DataBaseManagerJob(Context context) {
@@ -76,6 +78,7 @@ public class DataBaseManagerJob extends DataBaseManager {
         values.put(JobContract.KEY_ABSTRACT, job.getAbstrac());
         values.put(JobContract.KEY_DETAILS, job.getDetails());
         values.put(JobContract.KEY_AMOUNTSTEPS, job.getAmountsteps());
+        values.put(JobContract.KEY_NEXTSTEP, job.getNextstep());
 
         super.getDb().insertOrThrow(DataBaseManagerJob.JobContract.TABLE, null, values);
     }
@@ -119,6 +122,19 @@ public class DataBaseManagerJob extends DataBaseManager {
         super.getDb().insertOrThrow(DataBaseManagerStep.StepContract.TABLE, null, values);
     }
 
+    public void storePhase(Phase phase) {
+        ContentValues values = new ContentValues();
+        values.put(DatabaseManagerPhase.PhaseContract.KEY_ID, phase.getId());
+        values.put(DatabaseManagerPhase.PhaseContract.KEY_ID_PHASE, phase.getId_phase());
+        values.put(DatabaseManagerPhase.PhaseContract.KEY_ID_WORK, phase.getId_work());
+        values.put(DatabaseManagerPhase.PhaseContract.KEY_ID_STEP, phase.getStep());
+        values.put(DatabaseManagerPhase.PhaseContract.KEY_NAME, phase.getName());
+        values.put(DatabaseManagerPhase.PhaseContract.KEY_UNSORTED, phase.getUnsorted());
+        values.put(DatabaseManagerPhase.PhaseContract.KEY_BEGINDATE, phase.getBegindate());
+
+        super.getDb().insertOrThrow(DatabaseManagerPhase.PhaseContract.TABLE, null, values);
+    }
+
     public void storeReport(Report report) {
         ContentValues values = new ContentValues();
         values.put(DataBaseManagerReportType.ReportContract.KEY_ID, report.getId());
@@ -131,7 +147,8 @@ public class DataBaseManagerJob extends DataBaseManager {
 
     public void storeNotification(Job job, Step step, Integer id_user, Boolean modify_step, String report_date, String state,
                                   Boolean paused, Boolean unpaused, Integer pausetime, Double latitude, Double longitude, String message_wrote, Boolean ignored,
-                                  Boolean create_action, String action, String message_action, Integer report_type, ArrayList<Image> pictures) throws JSONException {
+                                  Boolean create_action, String action, String message_action, Integer report_type, ArrayList<Image> pictures,
+                                  Integer id_step_new) throws JSONException {
 
         DecimalFormatSymbols dfs = new DecimalFormatSymbols(Locale.US);
         dfs.setDecimalSeparator('.');
@@ -163,6 +180,7 @@ public class DataBaseManagerJob extends DataBaseManager {
         values.put(DataBaseManagerNotification.NotificationContract.KEY_PICTURES, pictures != null ? pictures.size() : 0);
         values.put(DataBaseManagerNotification.NotificationContract.KEY_VIDEOS, 0);
         values.put(DataBaseManagerNotification.NotificationContract.KEY_REPORT_TYPE, report_type);
+        values.put(DataBaseManagerNotification.NotificationContract.KEY_ID_STEP_NEW, id_step_new);
 
         // Documents
         JSONArray documents = new JSONArray();
@@ -222,7 +240,8 @@ public class DataBaseManagerJob extends DataBaseManager {
                 + "(CASE WHEN ( SELECT COALESCE( " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_ID + ", 0)"
                 + " FROM " + DataBaseManagerNotification.NotificationContract.TABLE
                 + " WHERE " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_WORK + " = " + JobContract.TABLE + "." + JobContract.KEY_ID
-                + " LIMIT 1) != 0 THEN 1 ELSE 0 END) AS pending_sync"
+                + " LIMIT 1) != 0 THEN 1 ELSE 0 END) AS pending_sync, "
+                + JobContract.KEY_NEXTSTEP
                 + " FROM " + JobContract.TABLE + " WHERE " + JobContract.KEY_ID + "=" + id, null);
 
         if(cursor.getCount() > 0) {
@@ -240,6 +259,7 @@ public class DataBaseManagerJob extends DataBaseManager {
             job.setAmountsteps(cursor.getInt(9));
             job.setCurrentstep(cursor.getInt(10));
             job.setPendingsync(cursor.getInt(11) > 0);
+            job.setNextstep(cursor.getInt(12));
         }
         return job;
     }
@@ -341,8 +361,32 @@ public class DataBaseManagerJob extends DataBaseManager {
             job.setAmountsteps(steps.length());
             job.setCurrentstep(0);
 
+            // Find next step
+            for (int s = 0; s < steps.length(); s++) {
+                JSONObject jsonStep = (JSONObject) steps.get(s);
+                if(jsonStep.getInt(DataBaseManagerStep.StepContract.KEY_INDEX) == 1){
+                    job.setNextstep(jsonStep.getInt("id"));
+                }
+            }
+
             // Store job
             this.store(job);
+
+            // Get Phases
+            JSONArray phases = jsonObject.getJSONArray(DataBaseManagerJob.JobContract.KEY_WORKSPHASES);
+            for (int r = 0; r < phases.length(); r++) {
+                JSONObject jsonPhase = (JSONObject) phases.get(r);
+
+                Phase phase = new Phase(jsonPhase.getInt("id"));
+                phase.setId_phase(jsonPhase.getInt(DatabaseManagerPhase.PhaseContract.KEY_ID_PHASE));
+                phase.setId_work(job.getId());
+                phase.setStep(jsonPhase.getInt(DatabaseManagerPhase.PhaseContract.KEY_ID_STEP));
+                phase.setName(jsonPhase.getString(DatabaseManagerPhase.PhaseContract.KEY_NAME));
+                phase.setUnsorted(jsonPhase.getBoolean(DatabaseManagerPhase.PhaseContract.KEY_UNSORTED));
+                phase.setBegindate(jsonPhase.getString(DatabaseManagerPhase.PhaseContract.KEY_BEGINDATE));
+
+                this.storePhase(phase);
+            }
 
             // Get Discard types
             JSONArray discardtypes = jsonObject.getJSONArray(DataBaseManagerJob.JobContract.KEY_DISCARDSTYPES);
@@ -355,6 +399,7 @@ public class DataBaseManagerJob extends DataBaseManager {
 
                 this.storeDiscard(discard);
             }
+
 
             // Store steps
             for (int s = 0; s < steps.length(); s++) {
@@ -411,15 +456,23 @@ public class DataBaseManagerJob extends DataBaseManager {
         Step step = null;
 
         Cursor cursor = super.getDb().rawQuery("SELECT "
-                + DataBaseManagerStep.StepContract.KEY_ID + ", " + DataBaseManagerStep.StepContract.KEY_ID_WORK + ", "
-                + DataBaseManagerStep.StepContract.KEY_ID_STEP + ", " + DataBaseManagerStep.StepContract.KEY_ID_PHASE + ", "
+                + DataBaseManagerStep.StepContract.KEY_ID + ", "
+                + DataBaseManagerStep.StepContract.TABLE + "." + DataBaseManagerStep.StepContract.KEY_ID_WORK + ", "
+                + DataBaseManagerStep.StepContract.KEY_ID_STEP + ", "
+                + DataBaseManagerStep.StepContract.TABLE + "." + DataBaseManagerStep.StepContract.KEY_ID_PHASE + ", "
                 + DataBaseManagerStep.StepContract.KEY_TITLE + ", " + DataBaseManagerStep.StepContract.KEY_MESSAGE + ", "
                 + DataBaseManagerStep.StepContract.KEY_TEXTAREA + ", " + DataBaseManagerStep.StepContract.KEY_TEXTAREAMANDATORY + ", "
                 + DataBaseManagerStep.StepContract.KEY_PAUSABLE + ", " + DataBaseManagerStep.StepContract.KEY_IGNORABLE + ", "
                 + DataBaseManagerStep.StepContract.KEY_INDEXA + ", " + DataBaseManagerStep.StepContract.KEY_PHOTOSMANDATORY + ", "
-                + DataBaseManagerStep.StepContract.KEY_PAUSED
+                + DataBaseManagerStep.StepContract.KEY_PAUSED + ", " + DataBaseManagerStep.StepContract.KEY_PAUSETIME + ", "
+                + " COALESCE(" + DatabaseManagerPhase.PhaseContract.KEY_UNSORTED + ",0)"
                 + " FROM " + DataBaseManagerStep.StepContract.TABLE
+                + " INNER JOIN " + DatabaseManagerPhase.PhaseContract.TABLE + " ON "
+                + DataBaseManagerStep.StepContract.TABLE + "." + DataBaseManagerStep.StepContract.KEY_ID_PHASE + " = " + DatabaseManagerPhase.PhaseContract.TABLE + "." + DatabaseManagerPhase.PhaseContract.KEY_ID_PHASE
+                + " AND " + DataBaseManagerStep.StepContract.TABLE + "." + DataBaseManagerStep.StepContract.KEY_ID_WORK
+                + " = " + DatabaseManagerPhase.PhaseContract.TABLE + "." + DatabaseManagerPhase.PhaseContract.KEY_ID_WORK
                 + " WHERE " + DataBaseManagerStep.StepContract.KEY_ID + "=" + id, null);
+
         if(cursor.getCount() > 0) {
             cursor.moveToFirst();
 
@@ -436,6 +489,8 @@ public class DataBaseManagerJob extends DataBaseManager {
             step.setIndex(cursor.getInt(10));
             step.setPhotosmandatory(cursor.getInt(11) > 0);
             step.setPaused(cursor.getInt(12) > 0);
+            step.setPausetime(cursor.getInt(13));
+            step.setUnsorted(cursor.getInt(14) > 0);
         }
         return step;
     }
@@ -453,7 +508,7 @@ public class DataBaseManagerJob extends DataBaseManager {
                 + " FROM " + DataBaseManagerStep.StepContract.TABLE
                 + " WHERE " + DataBaseManagerStep.StepContract.KEY_ID_WORK + "=" + job.getId()
                 + " AND " + DataBaseManagerStep.StepContract.KEY_REPORT + " = 1 "
-                + " ORDER BY " + DataBaseManagerStep.StepContract.KEY_INDEXA + " DESC ", null);
+                + " ORDER BY " + DataBaseManagerStep.StepContract.KEY_DATE + " DESC ", null);
 
         while (cursor.moveToNext()) {
             Step step = new Step(cursor.getInt(0));
@@ -547,8 +602,31 @@ public class DataBaseManagerJob extends DataBaseManager {
         return list;
     }
 
-    public void increaseStep(int id) {
-        super.getDb().execSQL("UPDATE " + JobContract.TABLE + " SET " + JobContract.KEY_CURRENTSTEP + " = ( COALESCE(" + JobContract.KEY_CURRENTSTEP + ", 0) + 1) "
+    public ArrayList<Step> getPhaseStepsList(Step step) {
+        ArrayList<Step> list = new ArrayList<Step>();
+
+        Cursor cursor = super.getDb().rawQuery("SELECT "
+                + DataBaseManagerStep.StepContract.KEY_ID + ", " + DataBaseManagerStep.StepContract.KEY_TITLE
+                + " FROM " + DataBaseManagerStep.StepContract.TABLE
+                + " WHERE " + DataBaseManagerStep.StepContract.KEY_ID_PHASE + " = " + step.getId_phase()
+                + " AND " + DataBaseManagerStep.StepContract.KEY_ID_WORK + " = " + step.getId_work()
+                + " AND " + DataBaseManagerStep.StepContract.KEY_REPORT + " = 0 "
+                + " AND " + DataBaseManagerStep.StepContract.KEY_ID + " != " + step.getId()
+                + " ORDER BY " + DataBaseManagerStep.StepContract.KEY_INDEXA + " ASC", null);
+
+        while (cursor.moveToNext()) {
+            Step item = new Step(cursor.getInt(0));
+            item.setTitle(cursor.getString(1));
+            list.add(item);
+        }
+
+        return list;
+    }
+
+    public void increaseStep(int id, int nextstep) {
+        super.getDb().execSQL("UPDATE " + JobContract.TABLE
+                + " SET " + JobContract.KEY_CURRENTSTEP + " = ( COALESCE(" + JobContract.KEY_CURRENTSTEP + ", 0) + 1), "
+                + JobContract.KEY_NEXTSTEP + " = " + nextstep
                 + " WHERE " + JobContract.KEY_ID + " = " + id);
     }
 
@@ -580,6 +658,11 @@ public class DataBaseManagerJob extends DataBaseManager {
                 + " WHERE " + DataBaseManagerStep.StepContract.KEY_ID + " = " + step.getId());
     }
 
+    public void setNextStep(Job job, int id) {
+        super.getDb().execSQL("UPDATE " + JobContract.TABLE + " SET " + JobContract.KEY_NEXTSTEP + " = " + id
+                + " WHERE " + JobContract.KEY_ID + " = " + job.getId());
+    }
+
     public void setReceived(Job job) throws JSONException {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String date = dateFormat.format(new Date());
@@ -591,7 +674,7 @@ public class DataBaseManagerJob extends DataBaseManager {
         Step step = this.nextStep(job);
         if(step != null && step instanceof Step) {
             // Sync received
-            this.storeNotification(job, step, mSession.getPartner(), false, date, "NOTIFICADA", false, false, null, null, null, null, false, false, null, null, 0, null);
+            this.storeNotification(job, step, mSession.getPartner(), false, date, "NOTIFICADA", false, false, null, null, null, null, false, false, null, null, 0, null, null);
         }
     }
 
@@ -611,7 +694,8 @@ public class DataBaseManagerJob extends DataBaseManager {
             DataBaseManagerNotification.NotificationContract.KEY_CREATE_ACTION, DataBaseManagerNotification.NotificationContract.KEY_ACTION,
             DataBaseManagerNotification.NotificationContract.KEY_MESSAGE_ACTION, DataBaseManagerNotification.NotificationContract.KEY_PICTURES,
             DataBaseManagerNotification.NotificationContract.KEY_VIDEOS, DataBaseManagerNotification.NotificationContract.KEY_REPORT_TYPE,
-            DataBaseManagerNotification.NotificationContract.KEY_DOCUMENTS, DataBaseManagerNotification.NotificationContract.KEY_PROCESSING
+            DataBaseManagerNotification.NotificationContract.KEY_DOCUMENTS, DataBaseManagerNotification.NotificationContract.KEY_PROCESSING,
+            DataBaseManagerNotification.NotificationContract.KEY_ID_STEP_NEW
         };
 
         Cursor cursor = super.getDb().query(DataBaseManagerNotification.NotificationContract.TABLE, from,
@@ -648,6 +732,7 @@ public class DataBaseManagerJob extends DataBaseManager {
             notification.setReport_type(cursor.getInt(25));
             notification.setDocuments(cursor.getString(26));
             notification.setProcessing(cursor.getInt(27) > 0);
+            notification.setId_step_new(cursor.getInt(28));
         }
 
         return notification;
@@ -740,6 +825,9 @@ public class DataBaseManagerJob extends DataBaseManager {
                 super.getDb().delete(DataBaseManagerReportType.ReportContract.TABLE,
                         DataBaseManagerReportType.ReportContract.KEY_ID_WORK + "=" + cursor.getInt(0), null);
 
+                super.getDb().delete(DatabaseManagerPhase.PhaseContract.TABLE,
+                        DatabaseManagerPhase.PhaseContract.KEY_ID_WORK + "=" + cursor.getInt(0), null);
+
                 super.getDb().delete(DataBaseManagerStep.StepContract.TABLE,
                         DataBaseManagerStep.StepContract.KEY_ID_WORK + "=" + cursor.getInt(0), null);
 
@@ -767,5 +855,7 @@ public class DataBaseManagerJob extends DataBaseManager {
         public static final String KEY_AMOUNTSTEPS = "numsteps";
         public static final String KEY_CURRENTSTEP = "currentstep";
         public static final String KEY_DISCARDSTYPES = "discardstypes";
+        public static final String KEY_WORKSPHASES = "worksphases";
+        public static final String KEY_NEXTSTEP = "nextstep";
     }
 }

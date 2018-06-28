@@ -36,6 +36,7 @@ public class DataBaseManagerNotification extends DataBaseManager {
             + NotificationContract.KEY_VIDEOS + " INTEGER,"
             + NotificationContract.KEY_REPORT_TYPE + " INTEGER,"
             + NotificationContract.KEY_DOCUMENTS + " TEXT,"
+            + NotificationContract.KEY_ID_STEP_NEW + " INTEGER,"
             + NotificationContract.KEY_PROCESSING + " BOOLEAN )";
 
     public DataBaseManagerNotification(Context context) {
@@ -72,5 +73,6 @@ public class DataBaseManagerNotification extends DataBaseManager {
         public static final String KEY_REPORT_TYPE = "report_type";
         public static final String KEY_DOCUMENTS = "documents";
         public static final String KEY_PROCESSING = "processing";
+        public static final String KEY_ID_STEP_NEW = "id_step_new";
     }
 }

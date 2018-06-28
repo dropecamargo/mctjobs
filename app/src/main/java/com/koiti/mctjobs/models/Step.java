@@ -26,6 +26,7 @@ public class Step {
     private Integer index;
     private Boolean photos;
     private Boolean pendingsync;
+    private Boolean unsorted;
 
     public Step(Integer id) {
         this.id = id;
@@ -229,5 +230,17 @@ public class Step {
 
     public void setPendingsync(Boolean pendingsync) {
         this.pendingsync = pendingsync;
+    }
+
+    public Boolean getUnsorted() {
+        return unsorted;
+    }
+
+    public void setUnsorted(Boolean unsorted) {
+        this.unsorted = unsorted;
+    }
+
+    public String toString(){
+        return( title );
     }
 }

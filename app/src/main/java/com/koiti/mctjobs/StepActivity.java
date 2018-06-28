@@ -167,7 +167,6 @@ public class StepActivity extends ActionBarActivity {
 
         // Job
         Integer work = Integer.parseInt(getIntent().getExtras().get("JOB").toString());
-        // System.out.println("DATA LLEGA -> " + getIntent().getExtras().get("JOB") + " -> " + work );
         job = mJob.getJob( work );
         if(job == null) {
             // Get Job API
@@ -381,7 +380,12 @@ public class StepActivity extends ActionBarActivity {
             });
 
             // Next step
-            step = mJob.nextStep(job);
+            if( job.getNextstep() != null && (int) job.getNextstep() > 0){
+                step = mJob.getStep(job.getNextstep());
+            }else{
+                step = mJob.nextStep(job);
+            }
+
             if (step == null) {
                 Toast.makeText(StepActivity.this, R.string.on_failure, Toast.LENGTH_SHORT).show();
                 finish();
@@ -495,12 +499,15 @@ public class StepActivity extends ActionBarActivity {
 
                         // Set report
                         mJob.changeStatus(job.getId(), "ACEPTADA");
-                        mJob.increaseStep(job.getId());
                         mJob.changeReport(step, date);
+
+                        // Increase Step
+                        Step nextstep = mJob.nextStep(job);
+                        mJob.increaseStep(job.getId(), (nextstep != null ? nextstep.getId() : 0));
 
                         // Sync report server
                         mJob.storeNotification(job, step, mSession.getPartner(), true, date, "ACEPTADA",
-                                false, false, null, latitude, longitude, null, false, false, null, null, 0, null);
+                                false, false, null, latitude, longitude, null, false, false, null, null, 0, null, null);
 
                         // Transaction successful
                         mJob.getDb().setTransactionSuccessful();
@@ -594,7 +601,7 @@ public class StepActivity extends ActionBarActivity {
 
                     // Sync report step
                     mJob.storeNotification(job, step, mSession.getPartner(), false, date, job.getState(),
-                            false, false, null, latitude, longitude, null, false, false, action, message_action, 0, null);
+                            false, false, null, latitude, longitude, null, false, false, action, message_action, 0, null, null);
 
                     // Transaction successful
                     mJob.getDb().setTransactionSuccessful();

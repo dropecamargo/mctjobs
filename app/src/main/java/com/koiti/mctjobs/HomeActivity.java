@@ -47,7 +47,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-//         System.out.println(FirebaseInstanceId.getInstance().getToken());
+        // System.out.println(FirebaseInstanceId.getInstance().getToken());
 
         // Session
         mSession = new UserSessionManager(this);

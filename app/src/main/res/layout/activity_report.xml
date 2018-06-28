@@ -83,6 +83,26 @@
                         android:padding="5dp"/>
 
                     <TextView
+                        android:id="@+id/changestep_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:padding="5dp"
+                        android:visibility="gone"
+                        android:text="¿Desea cambiar el paso a reportar?"
+                        android:layout_below="@+id/info_step"/>
+
+                    <Spinner
+                        android:id="@+id/changestep_step"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:spinnerMode="dialog"
+                        android:padding="5dp"
+                        android:layout_below="@+id/changestep_text"
+                        android:visibility="gone"/>
+
+                    <TextView
                         android:id="@+id/reporttype_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -90,7 +110,7 @@
                         android:padding="5dp"
                         android:visibility="gone"
                         android:text="Novedad"
-                        android:layout_below="@+id/info_step"/>
+                        android:layout_below="@+id/changestep_step"/>
 
                     <Spinner
                         android:id="@+id/reporttype_step"

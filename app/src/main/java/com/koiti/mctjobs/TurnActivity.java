@@ -475,6 +475,7 @@ public class TurnActivity extends ActionBarActivity {
                     oaut, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    // System.out.println(" onSuccess " + response.toString());
                     try {
 
                         if( response.getBoolean("sucessfull") == true) {

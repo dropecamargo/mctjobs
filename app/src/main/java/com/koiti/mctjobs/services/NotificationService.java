@@ -164,6 +164,7 @@ public class NotificationService extends Service {
             params.put("pictures", notification.getPictures());
             params.put("videos", notification.getVideos());
             params.put("report_type", notification.getReport_type());
+            params.put("id_step_new", notification.getId_step_new());
 
             // Documents
             JSONArray documents = new JSONArray();

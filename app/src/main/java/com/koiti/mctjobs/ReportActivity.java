@@ -34,6 +34,7 @@ import com.koiti.mctjobs.helpers.Utils;
 import com.koiti.mctjobs.models.Discard;
 import com.koiti.mctjobs.models.Image;
 import com.koiti.mctjobs.models.Job;
+import com.koiti.mctjobs.models.Phase;
 import com.koiti.mctjobs.models.Report;
 import com.koiti.mctjobs.models.Step;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
@@ -67,6 +68,8 @@ public class ReportActivity extends ActionBarActivity {
     private EditText edit_step;
     private TextView reporttype_text;
     private Spinner reporttype_step;
+    private TextView changestep_text;
+    private Spinner changestep_step;
     private TextView text_gallery_step;
     private ExpandableHeightGridView grid_gallery_step;
     private Button report_step;
@@ -104,6 +107,8 @@ public class ReportActivity extends ActionBarActivity {
         edit_step = (EditText) findViewById(R.id.edit_step);
         reporttype_text = (TextView) findViewById(R.id.reporttype_text);
         reporttype_step = (Spinner) findViewById(R.id.reporttype_step);
+        changestep_text = (TextView) findViewById(R.id.changestep_text);
+        changestep_step = (Spinner) findViewById(R.id.changestep_step);
         text_gallery_step = (TextView) findViewById(R.id.text_gallery_step);
         grid_gallery_step = (ExpandableHeightGridView) findViewById(R.id.gallery_step);
         report_step = (Button) findViewById(R.id.report_step);
@@ -194,6 +199,25 @@ public class ReportActivity extends ActionBarActivity {
 
                 case Constants.INTENT_REPORT:
                     info_step.setText(R.string.text_report);
+
+                    if(step.getUnsorted()) {
+                        // Get pending steps phase
+                        ArrayList<Step> stepList = mJob.getPhaseStepsList(step);
+
+                        // Add default selection
+                        Step defaultStep = new Step(0);
+                        defaultStep.setTitle("NO");
+                        stepList.add(defaultStep);
+
+                        // Add adapter steps
+                        ArrayAdapter<Step> adapter = new ArrayAdapter<Step>(this, android.R.layout.simple_spinner_item, stepList);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        changestep_step.setAdapter(adapter);
+
+                        changestep_text.setVisibility(View.VISIBLE);
+                        changestep_step.setVisibility(View.VISIBLE);
+                        changestep_step.setSelection(adapter.getPosition(defaultStep));
+                    }
                     break;
 
                 case Constants.INTENT_CANCEL:
@@ -327,7 +351,7 @@ public class ReportActivity extends ActionBarActivity {
 
                             // Sync report cancel
                             mJob.storeNotification(job, step, mSession.getPartner(), true, date, "RECHAZADA",
-                                    false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images);
+                                    false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images, null);
 
                             // Set RESULT_NEXT_STEP
                             result = Constants.RESULT_CANCEL;
@@ -338,7 +362,7 @@ public class ReportActivity extends ActionBarActivity {
 
                             // Sync report cancel
                             mJob.storeNotification(job, step, mSession.getPartner(), false, date, "DESCARTADA",
-                                    false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images);
+                                    false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images, null);
 
                             // Set RESULT_NEXT_STEP
                             result = Constants.RESULT_DISCARD;
@@ -350,7 +374,7 @@ public class ReportActivity extends ActionBarActivity {
 
                             // Sync report pause
                             mJob.storeNotification(job, step, mSession.getPartner(), false, date, job.getState(), (step.getPaused() ? false : true),
-                                    (step.getPaused() ? true : false), 0, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images);
+                                    (step.getPaused() ? true : false), 0, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images, null);
 
                             // Set RESULT_NEXT_STEP
                             result = Constants.RESULT_NEXT_STEP;
@@ -359,35 +383,47 @@ public class ReportActivity extends ActionBarActivity {
                         }else if( Arrays.asList(new Integer[]{ Constants.INTENT_IGNORE }).contains( action )) {
                             // Set ignore step
                             mJob.setIgnore(step, date);
-                            mJob.increaseStep(job.getId());
+
+                            // Increase Step
+                            Step nextstep = mJob.nextStep(job);
+                            mJob.increaseStep(job.getId(), (nextstep != null ? nextstep.getId() : 0));
 
                             // Sync report step
                             mJob.storeNotification(job, step, mSession.getPartner(), true, date, job.getState(),
-                                    false, false, null, latitude, longitude, message_wrote, true, false, null, null, reporttype.getId(), gallery_images);
+                                    false, false, null, latitude, longitude, message_wrote, true, false, null, null, reporttype.getId(), gallery_images, null);
 
                             // Set RESULT_NEXT_STEP
                             result = Constants.RESULT_NEXT_STEP;
 
                         // Novedad
                         }else if( Arrays.asList(new Integer[]{ Constants.INTENT_REPORT }).contains( action ) ) {
+                            // Set netxstep
+                            Step nextstep = (Step) changestep_step.getSelectedItem();;
+                            if(step.getUnsorted() && nextstep != null && nextstep.getId() != 0) {
+                                mJob.setNextStep(job, nextstep.getId());
+                            }
+
                             // Sync report step
                             mJob.storeNotification(job, step, mSession.getPartner(), false, date, job.getState(),
-                                    false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images);
+                                    false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images,
+                                    ((step.getUnsorted() && nextstep != null && nextstep.getId() != 0) ? nextstep.getId() : null));
 
                             // Set RESULT_NEXT_STEP
                             result = Constants.RESULT_NEXT_STEP;
 
                             Toast.makeText(ReportActivity.this, R.string.step_send_report, Toast.LENGTH_SHORT).show();
 
-                            // Default step
                         }else {
                             // Set report step
                             mJob.changeReport(step, date);
-                            mJob.increaseStep(job.getId());
+
+                            // Increase Step
+                            Step nextstep = mJob.nextStep(job);
+                            mJob.increaseStep(job.getId(), (nextstep != null ? nextstep.getId() : 0));
 
                             // Sync report step
                             mJob.storeNotification(job, step, mSession.getPartner(), true, date, ((!mJob.exitNextStep(job) || Arrays.asList(new Integer[]{ Constants.INTENT_CLOSE_WORK }).contains(reporttype.getId())) ? "FINALIZADA" : job.getState()),
-                                    false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images);
+                                    false, false, null, latitude, longitude, message_wrote, false, false, null, null, reporttype.getId(), gallery_images, null);
 
                             // Set RESULT_NEXT_STEP
                             result = Constants.RESULT_NEXT_STEP;
