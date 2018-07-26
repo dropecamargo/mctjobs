@@ -10,27 +10,54 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.system.ErrnoException;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.koiti.mctjobs.helpers.GPSTracker;
+import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
+import com.koiti.mctjobs.helpers.Utils;
 import com.koiti.mctjobs.models.Image;
+import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private static final String TAG = HomeActivity.class.getSimpleName();
 
     private UserSessionManager mSession;
+    private RestClientApp mRestClientApp;
     private GPSTracker gps;
+    private Tracker tracker;
+    private DataBaseManagerJob mJob;
 
     private ImageView mHomeBackground;
     private ImageView mLoginLogo;
@@ -46,6 +73,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        // Get tracker.
+        tracker = ((Application) getApplication()).getTracker();
+
+        // Database
+        mJob = new DataBaseManagerJob(this);
 
         // System.out.println(FirebaseInstanceId.getInstance().getToken());
 
@@ -66,6 +99,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             return;
         }
 
+        // Rest client
+        mRestClientApp = new RestClientApp(this);
+
         mHomeBackground = (ImageView) findViewById(R.id.home_background);
         mLoginLogo = (ImageView) findViewById(R.id.login_logo);
         mButtonJobs = (Button) findViewById(R.id.button_jobs);
@@ -81,9 +117,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         TextView nav_username = (TextView) headerView.findViewById(R.id.nav_name);
         nav_username.setText(mSession.getName());
 
-        // Show logout action
+        // Show and hide options (logout, turn, QR)
         if( mSession.getRol().equals("funcionario") ) {
             navigationView.getMenu().findItem(R.id.nav_item_logout).setVisible(true);
+
+            navigationView.getMenu().findItem(R.id.nav_item_qrmanifiesto).setVisible(false);
+
+            mButtonTurn.setVisibility(View.GONE);
+            navigationView.getMenu().findItem(R.id.nav_item_turn).setVisible(false);
         }
 
         // Load image avatar
@@ -162,6 +203,15 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
                 break;
 
+            case R.id.nav_item_qrmanifiesto:
+                Intent intentqr = new Intent(HomeActivity.this, ManifestqrActivity.class);
+                startActivity(intentqr);
+                break;
+
+            case R.id.nav_item_downexist:
+                downExistAction();
+                break;
+
             case R.id.nav_item_close:
                 finish();
                 break;
@@ -204,5 +254,117 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public void jobsAction(View view) {
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
         startActivity(intent);
+    }
+
+    public void downExistAction() {
+        try {
+            Toast.makeText(HomeActivity.this, R.string.down_exist, Toast.LENGTH_SHORT).show();
+            mRestClientApp.getAccessToken(new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    downExist(response);
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+                    onFailureAccessToken(throwable, response);
+                }
+            });
+        } catch (JSONException | IOException | NoSuchAlgorithmException | KeyManagementException | UnrecoverableKeyException |
+                CertificateException | KeyStoreException e ) {
+            Log.e(TAG, e.getMessage());
+            Toast.makeText(HomeActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void downExist(JSONObject oaut) {
+        try{
+            mRestClientApp.downExistJobs(mSession.getPartner(), oaut, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    mJob.getDb().beginTransaction();
+                    try {
+                        if (response.getBoolean("successful")) {
+                            JSONObject data = response.getJSONObject("data");
+
+                            // Inserts exits jobs
+                            JSONArray works = data.getJSONArray("works");
+                            mJob.parseExistJobs(works);
+
+                            // Transaction successful
+                            mJob.getDb().setTransactionSuccessful();
+
+                            Toast.makeText(HomeActivity.this, R.string.down_exist_successfull, Toast.LENGTH_LONG).show();
+                        }
+                    }catch (Exception e) {
+                        Log.e(TAG, e.getMessage());
+
+                        tracker.send(new HitBuilders.ExceptionBuilder()
+                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
+                                .setFatal(false)
+                                .build());
+
+                        Toast.makeText(HomeActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    }finally {
+                        // End transaction
+                        mJob.getDb().endTransaction();
+                    }
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+                    try {
+                        if (response == null) {
+                            throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
+                        }
+
+                        // Connect timeout exception
+                        if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+                            Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+                        }
+
+                        Toast.makeText(HomeActivity.this, R.string.on_down_exist, Toast.LENGTH_LONG).show();
+                    }catch (Exception e) {
+                        Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+
+                        // Tracker exception
+                        tracker.send(new HitBuilders.ExceptionBuilder()
+                                .setDescription(String.format("%s:downExist:%s", TAG, e.getLocalizedMessage()))
+                                .setFatal(false)
+                                .build());
+                    }
+                }
+            });
+        } catch (JSONException | UnsupportedEncodingException e ) {
+            Log.e(TAG, e.getMessage());
+            Toast.makeText(HomeActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void onFailureAccessToken(Throwable throwable, JSONObject response) {
+        try {
+            if (response == null) {
+                throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
+            }
+
+            // Connect timeout exception
+            if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+                Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+            }
+
+            // Error description
+            String error = response.getString("error_description");
+            if(!error.isEmpty()) {
+                Toast.makeText(HomeActivity.this, error, Toast.LENGTH_LONG).show();
+            }
+        }catch (Exception e) {
+            Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+
+            // Tracker exception
+            tracker.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
+                    .setFatal(false)
+                    .build());
+        }
     }
 }

@@ -4,9 +4,11 @@ public class Constants {
 
     public static final String URL_OAUTH_TOKEN = "https://esb.mct.com.co:9446/oauth2/token";
 
-    public static final String URL_GET_WORKS_API = "http://esb.mct.com.co:8280/services/pxBplWorksPartner";
+    public static final String URL_GET_WORKS_EXIST = "http://esb.mct.com.co:8280/services/pxBplWorksIncoursePartner";
 
     public static final String URL_GET_WORK_API = "http://esb.mct.com.co:8280/services/pxDetailsWork";
+
+    public static final String URL_GET_WORKS_API = "http://esb.mct.com.co:8280/services/pxBplWorksPartner";
 
     public static final String URL_POST_REPORT_API = "http://esb.mct.com.co:8280/services/pxBplNotificationService";
 
@@ -25,6 +27,8 @@ public class Constants {
     public static final String URL_TERMS_ON_API = "http://esb.mct.com.co:8280/services/proxy_secureregistrypolicydata";
 
     public static final String URL_TOKEN_PUSH_API = "http://esb.mct.com.co:8280/services/px_securecrearToken";
+
+    public static final String URL_GET_QR_MANIFEST = "http://esb.mct.com.co:8280/services/pxGetImageqrPartner";
 
     public static final String URL_POST_SEND_SMS_VERIFICATION = "https://api.authy.com/protected/json/phones/verification/start";
 
@@ -74,6 +78,8 @@ public class Constants {
 
     public static final int INTENT_CLOSE_WORK = 508;
 
+    public static final int INTENT_DEFAULT = 0;
+
     public static final int INTENT_REPORT = 1;
 
     public static final int INTENT_PAUSE = 2;
@@ -87,6 +93,8 @@ public class Constants {
     public static final int INTENT_DISCARD = 6;
 
     public static final int PRIVATE_MODE = 0;
+
+    public static final int STEP_FORWARD_DOCUMENTS = 0;
 
     public static final String ACTION_MEMORY_EXIT = "com.koiti.mctjobs.action.MEMORY_EXIT";
 

@@ -63,5 +63,6 @@ public class DataBaseManagerStep extends DataBaseManager {
         public static final String KEY_INDEX = "index";
         public static final String KEY_INDEXA = "indexa";
         public static final String KEY_PHOTOS = "photos";
+        public static final String KEY_FIELDS = "fields";
     }
 }

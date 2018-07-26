@@ -98,6 +98,7 @@ public class TurnActivity extends ActionBarActivity {
 
         // Session
         mSession = new UserSessionManager(this);
+
         // Check user login
         if(mSession.checkLogin()) {
             finish();
@@ -207,11 +208,13 @@ public class TurnActivity extends ActionBarActivity {
             mRestClientApp.prepareTurn(mSession.getPartner(), gps.getLatitude(), gps.getLongitude(), oaut, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    // System.out.println("onSuccess -> " + response.toString());
                     evaluateTurn(response);
                 }
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+                    // System.out.println("onFailure -> " + response.toString());
                     try
                     {
                         if(response == null) {

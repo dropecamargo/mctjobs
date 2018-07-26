@@ -176,6 +176,23 @@ public class StepActivity extends ActionBarActivity {
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        mJob.close();
+
+        super.onDestroy();
+    }
+
     public void openMenu(View view) {
         if(!job.getState().equals("FINALIZADA")) {
             actions_menu.expand();
@@ -226,7 +243,7 @@ public class StepActivity extends ActionBarActivity {
                         if( sucessfull ) {
                             JSONObject data = response.getJSONObject("data");
 
-                            mJob.parseJob(data);
+                            mJob.parseJob(data, true);
 
                             // Transaction successful
                             mJob.getDb().setTransactionSuccessful();
@@ -311,7 +328,7 @@ public class StepActivity extends ActionBarActivity {
         listView = (LinearLayout) findViewById(R.id.list_steps);
         Integer contador = stepList.size();
         for (int i = 0; i < stepList.size(); i++) {
-            Step step = stepList.get(i);
+            final Step step = stepList.get(i);
             View view = getLayoutInflater().inflate(R.layout.step_list_row, null);
             view.setBackgroundDrawable(getResources().getDrawable(R.drawable.step_list_border));
 
@@ -332,6 +349,34 @@ public class StepActivity extends ActionBarActivity {
             if (step.getPendingsync()) {
                 pending_sync.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_pending_sync));
             }
+
+            // Implement it's on click listener.
+            view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+
+                    CharSequence colors[] = new CharSequence[] {"Reenviar imágenes"};
+                    AlertDialog.Builder builder = new AlertDialog.Builder(StepActivity.this);
+                    builder.setTitle(step.getTitle());
+                    builder.setItems(colors, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case Constants.STEP_FORWARD_DOCUMENTS:
+                                    if(mJob.getSyncDocuments(step) > 0){
+                                        mJob.forwardDocuments(step);
+                                        Toast.makeText(StepActivity.this, R.string.forward_document_sucessfull, Toast.LENGTH_LONG).show();
+                                    }else{
+                                        Toast.makeText(StepActivity.this, R.string.forward_document_error, Toast.LENGTH_LONG).show();
+                                    }
+                            }
+                        }
+                    });
+                    builder.show();
+
+                    return true;
+                }
+            });
 
             listView.addView(view);
             contador--;
@@ -383,7 +428,7 @@ public class StepActivity extends ActionBarActivity {
             if( job.getNextstep() != null && (int) job.getNextstep() > 0){
                 step = mJob.getStep(job.getNextstep());
             }else{
-                step = mJob.nextStep(job);
+                step = mJob.nextStep(job.getId());
             }
 
             if (step == null) {
@@ -502,12 +547,12 @@ public class StepActivity extends ActionBarActivity {
                         mJob.changeReport(step, date);
 
                         // Increase Step
-                        Step nextstep = mJob.nextStep(job);
+                        Step nextstep = mJob.nextStep(job.getId());
                         mJob.increaseStep(job.getId(), (nextstep != null ? nextstep.getId() : 0));
 
                         // Sync report server
                         mJob.storeNotification(job, step, mSession.getPartner(), true, date, "ACEPTADA",
-                                false, false, null, latitude, longitude, null, false, false, null, null, 0, null, null);
+                                false, false, null, latitude, longitude, null, false, false, null, null, 0, null, null, null);
 
                         // Transaction successful
                         mJob.getDb().setTransactionSuccessful();
@@ -601,7 +646,7 @@ public class StepActivity extends ActionBarActivity {
 
                     // Sync report step
                     mJob.storeNotification(job, step, mSession.getPartner(), false, date, job.getState(),
-                            false, false, null, latitude, longitude, null, false, false, action, message_action, 0, null, null);
+                            false, false, null, latitude, longitude, null, false, false, action, message_action, 0, null, null, null);
 
                     // Transaction successful
                     mJob.getDb().setTransactionSuccessful();
@@ -675,23 +720,6 @@ public class StepActivity extends ActionBarActivity {
                     break;
             }
         }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onDestroy() {
-        mJob.close();
-
-        super.onDestroy();
     }
 
     public void onFailureAccessToken(Throwable throwable, JSONObject response) {

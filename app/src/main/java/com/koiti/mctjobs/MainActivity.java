@@ -193,7 +193,7 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
                         }
 
                         // Find next step
-                        Step step = mJob.nextStep(job);
+                        Step step = mJob.nextStep(job.getId());
                         if(step != null) {
                             Intent intent = new Intent(this, StepActivity.class);
                             intent.putExtra("JOB", job.getId());

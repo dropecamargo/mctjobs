@@ -4,12 +4,21 @@
     <group>
         <item
             android:id="@+id/nav_item_jobs"
-            android:icon="@drawable/ic_action_turn"
+            android:icon="@drawable/ic_action_report"
             android:title="@string/nav_item_jobs"/>
         <item
             android:id="@+id/nav_item_turn"
             android:icon="@drawable/ic_action_turn"
             android:title="@string/nav_item_turn"/>
+
+        <item
+            android:id="@+id/nav_item_qrmanifiesto"
+            android:icon="@drawable/ic_action_qr"
+            android:title="@string/nav_item_qr"/>
+        <item
+            android:id="@+id/nav_item_downexist"
+            android:icon="@drawable/ic_action_downexist"
+            android:title="@string/nav_item_downexist"/>
     </group>
 
     <item android:title="@string/nav_others_title">

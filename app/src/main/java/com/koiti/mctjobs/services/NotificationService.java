@@ -166,6 +166,15 @@ public class NotificationService extends Service {
             params.put("report_type", notification.getReport_type());
             params.put("id_step_new", notification.getId_step_new());
 
+            // Fields
+            JSONArray fields = null;
+            if(notification.getFields() != null && !notification.getFields().isEmpty()) {
+                fields = new JSONArray(notification.getFields());
+            }
+            params.put("fields", fields != null ? (Object) fields : JSONObject.NULL);
+
+            System.out.println(params.toString());
+
             // Documents
             JSONArray documents = new JSONArray();
             if (notification.getDocuments() != null && !notification.getDocuments().isEmpty()) {

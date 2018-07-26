@@ -13,6 +13,7 @@ public class DataBaseManagerDocument extends DataBaseManager {
             + DocumentContract.KEY_NAME + " TEXT,"
             + DocumentContract.KEY_TYPE + " TEXT,"
             + DocumentContract.KEY_CONTENT + " TEXT, "
+            + DocumentContract.KEY_SYNC + " BOOLEAN, "
             + DocumentContract.KEY_PROCESSING + " BOOLEAN )";
 
     public DataBaseManagerDocument(Context context) {
@@ -28,6 +29,7 @@ public class DataBaseManagerDocument extends DataBaseManager {
         public static final String KEY_NAME = "name";
         public static final String KEY_TYPE = "type";
         public static final String KEY_CONTENT = "content";
+        public static final String KEY_SYNC = "sync";
         public static final String KEY_PROCESSING = "processing";
     }
 }

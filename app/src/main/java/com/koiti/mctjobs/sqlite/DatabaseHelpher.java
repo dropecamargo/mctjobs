@@ -9,7 +9,7 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
 
     private static final String TAG = DatabaseHelpher.class.getSimpleName();
     private static final String DB_NAME = "mctjobs.db";
-    private static int DB_SCHEME_VERSION = 7;
+    private static int DB_SCHEME_VERSION = 10;
 
     public DatabaseHelpher(Context context) {
         super(context, DB_NAME, null, DB_SCHEME_VERSION);
@@ -24,6 +24,7 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
         db.execSQL(DataBaseManagerNotification.CREATE_TABLE);
         db.execSQL(DataBaseManagerDocument.CREATE_TABLE);
         db.execSQL(DatabaseManagerPhase.CREATE_TABLE);
+        db.execSQL(DataBaseManagerField.CREATE_TABLE);
 
         Log.d(TAG,"Base de Datos Creada "+DatabaseHelpher.DB_NAME);
     }
@@ -83,6 +84,20 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
 
             db.execSQL("ALTER TABLE " + DataBaseManagerNotification.NotificationContract.TABLE + " ADD COLUMN "
                     + DataBaseManagerNotification.NotificationContract.KEY_ID_STEP_NEW + " INTEGER;");
+        }
+        if (oldVersion < 8) {
+            db.execSQL("ALTER TABLE " + DataBaseManagerNotification.NotificationContract.TABLE + " ADD COLUMN "
+                    + DataBaseManagerNotification.NotificationContract.KEY_FIELDS + " TEXT;");
+
+            db.execSQL(DataBaseManagerField.CREATE_TABLE);
+        }
+        if (oldVersion < 9) {
+            db.execSQL("ALTER TABLE " + DataBaseManagerField.FieldContract.TABLE + " ADD COLUMN "
+                    + DataBaseManagerField.FieldContract.KEY_ORDEN + " INTEGER;");
+        }
+        if (oldVersion < 10) {
+            db.execSQL("ALTER TABLE " + DataBaseManagerDocument.DocumentContract.TABLE + " ADD COLUMN "
+                    + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " BOOLEAN;");
         }
     }
 

@@ -1,6 +1,7 @@
 package com.koiti.mctjobs.helpers;
 
 import android.content.Context;
+import android.provider.Settings;
 import android.provider.Settings.Secure;
 
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -156,7 +157,6 @@ public class RestClientApp {
     }
 
     public void syncDocument(ByteArrayEntity entity, JSONObject oaut, JsonHttpResponseHandler jsonHttpResponseHandler) throws UnsupportedEncodingException, JSONException {
-
         AsyncHttpClient client = new AsyncHttpClient();
         client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
         client.addHeader("Authorization", "Bearer " + oaut.getString("access_token"));
@@ -289,5 +289,39 @@ public class RestClientApp {
         client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
         client.addHeader("Authorization", "Bearer " + oaut.getString("access_token"));
         client.post(null, Constants.URL_GET_WORK_API, entity, "application/json", jsonHttpResponseHandler);
+    }
+
+    public void downExistJobs(Integer partner, JSONObject oaut, JsonHttpResponseHandler jsonHttpResponseHandler) throws UnsupportedEncodingException, JSONException {
+        // Params
+        JSONObject params = new JSONObject();
+        params.put("id_partner", partner);
+        params.put("android_id", Secure.getString(this.context.getContentResolver(), Secure.ANDROID_ID));
+        params.put("version", BuildConfig.VERSION_NAME);
+        params.put("token", FirebaseInstanceId.getInstance().getToken());
+
+        ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
+        client.addHeader("Authorization", "Bearer " + oaut.getString("access_token"));
+
+        client.post(null, Constants.URL_GET_WORKS_EXIST, entity, "application/json", jsonHttpResponseHandler);
+    }
+
+    public void getQRManifest(Integer partner, JSONObject oaut, JsonHttpResponseHandler jsonHttpResponseHandler) throws UnsupportedEncodingException, JSONException {
+        // Params
+        JSONObject params = new JSONObject();
+        params.put("id_partner", partner);
+        params.put("android_id", Secure.getString(this.context.getContentResolver(), Secure.ANDROID_ID));
+        params.put("version", BuildConfig.VERSION_NAME);
+        params.put("token", FirebaseInstanceId.getInstance().getToken());
+
+        ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
+        client.addHeader("Authorization", "Bearer " + oaut.getString("access_token"));
+
+        client.post(null, Constants.URL_GET_QR_MANIFEST, entity, "application/json", jsonHttpResponseHandler);
     }
 }

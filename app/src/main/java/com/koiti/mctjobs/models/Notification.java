@@ -31,6 +31,7 @@ public class Notification {
     private String documents;
     private boolean processing;
     private int id_step_new;
+    private String fields;
 
     public static final String type_online = "ONLINE";
     public static final String type_batch = "BATCH";
@@ -269,5 +270,13 @@ public class Notification {
 
     public void setId_step_new(int id_step_new) {
         this.id_step_new = id_step_new;
+    }
+
+    public String getFields() {
+        return fields;
+    }
+
+    public void setFields(String fields) {
+        this.fields = fields;
     }
 }

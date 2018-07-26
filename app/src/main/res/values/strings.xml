@@ -65,7 +65,9 @@
     <string name="text_unpause">Va a CONTINUAR la tarea</string>
     <string name="text_ignore">Va a OMITIR la tarea</string>
     <string name="text_report">Reportar novedad</string>
+    <string name="text_info_fields">Información esperada</string>
 
+    <string name="down_exist">Descargando trabajos existentes...</string>
     <string name="panic_title">Enviar pánico</string>
     <string name="panic_message">¿Estas seguro de enviar pánico?</string>
     <string name="panic_successful">¡Panico enviado!</string>
@@ -75,16 +77,23 @@
     <string name="instructions_title">Solicitar instrucciones</string>
     <string name="instructions_message">¿Estas seguro de solicitar instrucciones?</string>
     <string name="instructions_successful">¡Instrucciones solicitadas, en un momento estaremos en contacto!</string>
+    <string name="down_exist_successfull">Trabajos existentes sincronizados con éxito.</string>
+    <string name="forward_document_sucessfull">Proceso de reenvió de imágenes fue iniciado con éxito..</string>
+    <string name="forward_document_error">No existen imágenes disponibles para realizar el proceso de reenvió.</string>
+    <string name="error_field_dynamic_required">%1$s es requerido, por favor ingrese un valor.</string>
 
     <!-- Exceptions -->
     <string name="on_failure_oaut_token">Ocurrió un error, recuperando token.</string>
     <string name="on_failure_sync_jobs">Ocurrió un error, por favor vuelva a intentarlo.</string>
+    <string name="on_failure_field">Ocurrió un error preparando campos, por favor vuelva a intentarlo.</string>
     <string name="on_failure">Ocurrió un error, por favor vuelva a intentarlo.</string>
     <string name="on_null_pointer_exception">Ups&#8230; Al parecer ocurrio un error, por favor vuelva a intentarlo.</string>
     <string name="on_null_server_exception">TimeoutException, No hay respuesta del servidor (response body is null).</string>
     <string name="on_null_server_twilio_exception">TimeoutException Twilio, No hay respuesta del servidor (response body is null).</string>
     <string name="on_host_exception">La conexión de trasmisión de datos ha fallado. Revisa red de datos y/o wifi y vuelve a intentarlo más tarde.</string>
     <string name="on_failure_offices">Ocurrió un error recuperando oficinas, por favor vuelva a intentarlo o comuníquese con el administrador.</string>
+    <string name="on_down_exist">Ocurrió un error recuperando trabajos existentes, por favor vuelva a intentarlo.</string>
+    <string name="on_failure_nextstep">Ocurrió un error recuperando tareas pendientes por realizar para el trabajo %1$s, por favor comuníquese con el administrador.</string>
     <string name="state_undefined">Estado de trabajo no identificado, por favor vuelva a intentarlo.</string>
     <string name="action_undefined">Acción no identificada, por favor vuelva a intentarlo.</string>
 
@@ -137,8 +146,7 @@
     <string name="nav_others_title">Otros</string>
     <string name="nav_item_turn">Enturnamiento</string>
     <string name="nav_item_jobs">Trabajos</string>
+    <string name="nav_item_qr">QR manifiesto</string>
+    <string name="nav_item_downexist">Descargar existentes</string>
     <string name="title_activity_terms">TermsActivity</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

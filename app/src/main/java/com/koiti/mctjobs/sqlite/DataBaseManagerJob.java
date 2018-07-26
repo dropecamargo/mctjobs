@@ -4,10 +4,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import com.koiti.mctjobs.R;
 import com.koiti.mctjobs.helpers.GalleryData;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.models.Discard;
 import com.koiti.mctjobs.models.Document;
+import com.koiti.mctjobs.models.Field;
 import com.koiti.mctjobs.models.Image;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.models.Notification;
@@ -145,10 +147,25 @@ public class DataBaseManagerJob extends DataBaseManager {
         super.getDb().insertOrThrow(DataBaseManagerReportType.ReportContract.TABLE, null, values);
     }
 
+    public void storeField(Field field) {
+        ContentValues values = new ContentValues();
+        values.put(DataBaseManagerField.FieldContract.KEY_ID, field.getId());
+        values.put(DataBaseManagerField.FieldContract.KEY_ID_WORK, field.getId_work());
+        values.put(DataBaseManagerField.FieldContract.KEY_ID_STEP, field.getId_step());
+        values.put(DataBaseManagerField.FieldContract.KEY_TITLE, field.getTitle());
+        values.put(DataBaseManagerField.FieldContract.KEY_TYPE, field.getType());
+        values.put(DataBaseManagerField.FieldContract.KEY_MANDATORY, field.getMandatory());
+        values.put(DataBaseManagerField.FieldContract.KEY_DOMAIN, field.getDomain());
+        values.put(DataBaseManagerField.FieldContract.KEY_ADEFAULT, field.get_default());
+        values.put(DataBaseManagerField.FieldContract.KEY_ORDEN, field.getOrden());
+
+        super.getDb().insertOrThrow(DataBaseManagerField.FieldContract.TABLE, null, values);
+    }
+
     public void storeNotification(Job job, Step step, Integer id_user, Boolean modify_step, String report_date, String state,
                                   Boolean paused, Boolean unpaused, Integer pausetime, Double latitude, Double longitude, String message_wrote, Boolean ignored,
                                   Boolean create_action, String action, String message_action, Integer report_type, ArrayList<Image> pictures,
-                                  Integer id_step_new) throws JSONException {
+                                  Integer id_step_new, String fields) throws JSONException {
 
         DecimalFormatSymbols dfs = new DecimalFormatSymbols(Locale.US);
         dfs.setDecimalSeparator('.');
@@ -181,6 +198,7 @@ public class DataBaseManagerJob extends DataBaseManager {
         values.put(DataBaseManagerNotification.NotificationContract.KEY_VIDEOS, 0);
         values.put(DataBaseManagerNotification.NotificationContract.KEY_REPORT_TYPE, report_type);
         values.put(DataBaseManagerNotification.NotificationContract.KEY_ID_STEP_NEW, id_step_new);
+        values.put(DataBaseManagerNotification.NotificationContract.KEY_FIELDS, fields);
 
         // Documents
         JSONArray documents = new JSONArray();
@@ -209,6 +227,7 @@ public class DataBaseManagerJob extends DataBaseManager {
                 documentvalues.put(DataBaseManagerDocument.DocumentContract.KEY_TYPE, "IMAGE");
                 documentvalues.put(DataBaseManagerDocument.DocumentContract.KEY_NAME, image.getAlbum() + "_" + image.getName());
                 documentvalues.put(DataBaseManagerDocument.DocumentContract.KEY_CONTENT, image.getPath());
+                documentvalues.put(DataBaseManagerDocument.DocumentContract.KEY_SYNC, false);
                 cvdocuments.add(documentvalues);
 
                 // Increment item
@@ -333,15 +352,34 @@ public class DataBaseManagerJob extends DataBaseManager {
         return true;
     }
 
+    public void parseExistJobs(JSONArray works) throws JSONException, NullPointerException {
+        for (int i = 0; i < works.length(); i++) {
+            JSONObject jsonObject = (JSONObject) works.get(i);
+
+            // System.out.println("Viejo -> " + jsonObject.toString());
+            this.parseJob(jsonObject, false);
+
+            // Set current step
+            Step nextstep = this.nextStep(jsonObject.getInt("id"));
+            if(nextstep == null) {
+                throw new NullPointerException(this.context.getResources().getString(R.string.on_failure_nextstep, jsonObject.getString("id")));
+            }
+            this.setNextStep(jsonObject.getInt("id"), nextstep.getId());
+
+            // Set progress
+            this.resetProgress(jsonObject.getInt("id"));
+        }
+    }
+
     public void parseJobs(JSONArray works) throws JSONException {
         for (int i = 0; i < works.length(); i++) {
             JSONObject jsonObject = (JSONObject) works.get(i);
 
-            this.parseJob(jsonObject);
+            this.parseJob(jsonObject, true);
         }
     }
 
-    public void parseJob(JSONObject jsonObject) throws JSONException {
+    public void parseJob(JSONObject jsonObject, Boolean notify) throws JSONException {
         // Validate Job DB
         if (!this.exist(jsonObject.getInt("id"))) {
             Job job = new Job(jsonObject.getInt("id"));
@@ -445,10 +483,30 @@ public class DataBaseManagerJob extends DataBaseManager {
                     // Store step
                     this.storeReport(report);
                 }
+
+                // Get fields
+                JSONArray fields = jsonStep.getJSONArray(DataBaseManagerStep.StepContract.KEY_FIELDS);
+                for (int f = 0; f < fields.length(); f++) {
+                    JSONObject jsonField = (JSONObject) fields.get(f);
+
+                    Field field = new Field(
+                        jsonField.getInt(DataBaseManagerField.FieldContract.KEY_ID), job.getId(), step.getId()
+                    );
+                    field.setTitle(jsonField.getString(DataBaseManagerField.FieldContract.KEY_TITLE));
+                    field.setType(jsonField.getString(DataBaseManagerField.FieldContract.KEY_TYPE));
+                    field.setMandatory(jsonField.getBoolean(DataBaseManagerField.FieldContract.KEY_MANDATORY));
+                    field.setDomain(jsonField.getString(DataBaseManagerField.FieldContract.KEY_DOMAIN));
+                    field.set_default(jsonField.getString(DataBaseManagerField.FieldContract.KEY_DEFAULT));
+                    field.setOrden(jsonField.getInt(DataBaseManagerField.FieldContract.KEY_ORDEN));
+
+                    this.storeField(field);
+                }
             }
 
             // Sync received
-            this.setReceived(job);
+            if(notify) {
+                this.setReceived(job);
+            }
         }
     }
 
@@ -504,7 +562,7 @@ public class DataBaseManagerJob extends DataBaseManager {
                 + " FROM " + DataBaseManagerNotification.NotificationContract.TABLE
                 + " WHERE " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_WORK + " = " + DataBaseManagerStep.StepContract.TABLE + "." + DataBaseManagerStep.StepContract.KEY_ID_WORK
                 + " AND " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_WORKSTEP + " = " + DataBaseManagerStep.StepContract.TABLE + "." + DataBaseManagerStep.StepContract.KEY_ID
-                + " LIMIT 1) != 0 THEN 1 ELSE 0 END) AS pending_sync"
+                + " LIMIT 1) != 0 THEN 1 ELSE 0 END) AS pending_sync, " + DataBaseManagerStep.StepContract.KEY_ID_WORK
                 + " FROM " + DataBaseManagerStep.StepContract.TABLE
                 + " WHERE " + DataBaseManagerStep.StepContract.KEY_ID_WORK + "=" + job.getId()
                 + " AND " + DataBaseManagerStep.StepContract.KEY_REPORT + " = 1 "
@@ -516,13 +574,14 @@ public class DataBaseManagerJob extends DataBaseManager {
             step.setDate(cursor.getString(2));
             step.setIgnored(cursor.getInt(3) > 0);
             step.setPendingsync(cursor.getInt(4) > 0);
+            step.setId_work(cursor.getInt(5));
             list.add(step);
         }
 
         return list;
     }
 
-    public Step nextStep(Job job) {
+    public Step nextStep(Integer job) {
         Step step = null;
 
         Cursor cursor = super.getDb().rawQuery("SELECT "
@@ -533,7 +592,7 @@ public class DataBaseManagerJob extends DataBaseManager {
             + DataBaseManagerStep.StepContract.KEY_PAUSABLE + ", " + DataBaseManagerStep.StepContract.KEY_IGNORABLE + ", "
             + DataBaseManagerStep.StepContract.KEY_PAUSED + ", " + DataBaseManagerStep.StepContract.KEY_PAUSETIME
             + " FROM " + DataBaseManagerStep.StepContract.TABLE
-            + " WHERE " + DataBaseManagerStep.StepContract.KEY_ID_WORK + " = " + job.getId()
+            + " WHERE " + DataBaseManagerStep.StepContract.KEY_ID_WORK + " = " + job
             + " AND " + DataBaseManagerStep.StepContract.KEY_REPORT + " = 0 "
             + " ORDER BY " + DataBaseManagerStep.StepContract.KEY_INDEXA + " ASC", null);
 
@@ -557,7 +616,7 @@ public class DataBaseManagerJob extends DataBaseManager {
     }
 
     public boolean exitNextStep(Job job) {
-        Step step = this.nextStep(job);
+        Step step = this.nextStep(job.getId());
         if(step == null) {
             return false;
         }
@@ -658,9 +717,9 @@ public class DataBaseManagerJob extends DataBaseManager {
                 + " WHERE " + DataBaseManagerStep.StepContract.KEY_ID + " = " + step.getId());
     }
 
-    public void setNextStep(Job job, int id) {
+    public void setNextStep(int job, int id) {
         super.getDb().execSQL("UPDATE " + JobContract.TABLE + " SET " + JobContract.KEY_NEXTSTEP + " = " + id
-                + " WHERE " + JobContract.KEY_ID + " = " + job.getId());
+                + " WHERE " + JobContract.KEY_ID + " = " + job);
     }
 
     public void setReceived(Job job) throws JSONException {
@@ -671,11 +730,26 @@ public class DataBaseManagerJob extends DataBaseManager {
         this.changeStatus(job.getId(), "NOTIFICADA");
 
         // First step
-        Step step = this.nextStep(job);
+        Step step = this.nextStep(job.getId());
         if(step != null && step instanceof Step) {
             // Sync received
-            this.storeNotification(job, step, mSession.getPartner(), false, date, "NOTIFICADA", false, false, null, null, null, null, false, false, null, null, 0, null, null);
+            this.storeNotification(job, step, mSession.getPartner(), false, date, "NOTIFICADA", false, false, null, null, null, null, false, false, null, null, 0, null, null, null);
         }
+    }
+
+    public void resetProgress(int job) {
+        // Get progress
+        Cursor cursor = super.getDb().rawQuery("SELECT COUNT( " + DataBaseManagerStep.StepContract.KEY_ID + " )"
+                + " FROM " + DataBaseManagerStep.StepContract.TABLE
+                + " WHERE " + DataBaseManagerStep.StepContract.KEY_ID_WORK + " = " + job
+                + " AND " + DataBaseManagerStep.StepContract.KEY_REPORT + " = 1 ", null);
+        cursor.moveToFirst();
+        int currentstep = cursor.getInt(0);
+
+        // Set Progress
+        super.getDb().execSQL("UPDATE " + JobContract.TABLE
+                + " SET " + JobContract.KEY_CURRENTSTEP + " = " + currentstep
+                + " WHERE " + JobContract.KEY_ID + " = " + job);
     }
 
     public Notification getNextNotification() {
@@ -695,7 +769,7 @@ public class DataBaseManagerJob extends DataBaseManager {
             DataBaseManagerNotification.NotificationContract.KEY_MESSAGE_ACTION, DataBaseManagerNotification.NotificationContract.KEY_PICTURES,
             DataBaseManagerNotification.NotificationContract.KEY_VIDEOS, DataBaseManagerNotification.NotificationContract.KEY_REPORT_TYPE,
             DataBaseManagerNotification.NotificationContract.KEY_DOCUMENTS, DataBaseManagerNotification.NotificationContract.KEY_PROCESSING,
-            DataBaseManagerNotification.NotificationContract.KEY_ID_STEP_NEW
+            DataBaseManagerNotification.NotificationContract.KEY_ID_STEP_NEW, DataBaseManagerNotification.NotificationContract.KEY_FIELDS
         };
 
         Cursor cursor = super.getDb().query(DataBaseManagerNotification.NotificationContract.TABLE, from,
@@ -733,6 +807,7 @@ public class DataBaseManagerJob extends DataBaseManager {
             notification.setDocuments(cursor.getString(26));
             notification.setProcessing(cursor.getInt(27) > 0);
             notification.setId_step_new(cursor.getInt(28));
+            notification.setFields(cursor.getString(29));
         }
 
         return notification;
@@ -754,6 +829,7 @@ public class DataBaseManagerJob extends DataBaseManager {
                 + " LEFT JOIN " + DataBaseManagerNotification.NotificationContract.TABLE + " ON "
                     + DataBaseManagerDocument.DocumentContract.KEY_REPORT + " = " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_ID
                 + " WHERE " + DataBaseManagerNotification.NotificationContract.TABLE + "." + DataBaseManagerNotification.NotificationContract.KEY_ID + " IS NULL "
+                + " AND (" + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " = 0 OR " + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " IS NULL) "
                 + " ORDER BY " + DataBaseManagerDocument.DocumentContract.KEY_REPORT + " ASC", null);
 
         if(cursor.getCount() > 0) {
@@ -769,6 +845,33 @@ public class DataBaseManagerJob extends DataBaseManager {
             document.setProcessing(cursor.getInt(7) > 0);
         }
         return document;
+    }
+
+    public ArrayList<Field> getFieldsStep(Step step) {
+        ArrayList<Field> list = new ArrayList<Field>();
+
+        Cursor cursor = super.getDb().rawQuery("SELECT "
+                + DataBaseManagerField.FieldContract.KEY_ID + ", " + DataBaseManagerField.FieldContract.KEY_ID_WORK + ", "
+                + DataBaseManagerField.FieldContract.KEY_ID_STEP + ", " + DataBaseManagerField.FieldContract.KEY_TITLE + ", "
+                + DataBaseManagerField.FieldContract.KEY_TYPE + ", " + DataBaseManagerField.FieldContract.KEY_MANDATORY + ", "
+                + DataBaseManagerField.FieldContract.KEY_DOMAIN + ", " + DataBaseManagerField.FieldContract.KEY_ADEFAULT + ", "
+                + DataBaseManagerField.FieldContract.KEY_ORDEN
+                + " FROM " + DataBaseManagerField.FieldContract.TABLE
+                + " WHERE " + DataBaseManagerField.FieldContract.KEY_ID_WORK + " = " + step.getId_work()
+                + " AND "     + DataBaseManagerField.FieldContract.KEY_ID_STEP + " = " + step.getId()
+                + " ORDER BY " + DataBaseManagerField.FieldContract.KEY_ORDEN + " ASC", null);
+
+        while (cursor.moveToNext()) {
+            Field item = new Field(cursor.getInt(0), cursor.getInt(1), cursor.getInt(2));
+            item.setTitle(cursor.getString(3));
+            item.setType(cursor.getString(4));
+            item.setMandatory(cursor.getInt(5) > 0);
+            item.setDomain(cursor.getString(6));
+            item.set_default(cursor.getString(7));
+            item.setOrden(cursor.getInt(8));
+            list.add(item);
+        }
+        return list;
     }
 
     public void removeNotification(Notification notification) {
@@ -798,9 +901,10 @@ public class DataBaseManagerJob extends DataBaseManager {
                 + " WHERE " + DataBaseManagerDocument.DocumentContract.KEY_ID + "=" + document.getId());
     }
 
-    public void removeDocument(Document document) {
-        super.getDb().delete(DataBaseManagerDocument.DocumentContract.TABLE,
-                DataBaseManagerDocument.DocumentContract.KEY_ID + "=" + document.getId(), null);
+    public void setDocumentSynd(Document document) {
+        super.getDb().execSQL("UPDATE " + DataBaseManagerDocument.DocumentContract.TABLE
+                + " SET " + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " = 1 "
+                + " WHERE " + DataBaseManagerDocument.DocumentContract.KEY_ID + " = " + document.getId());
     }
 
     public void removeOldJobs(String date) {
@@ -835,6 +939,25 @@ public class DataBaseManagerJob extends DataBaseManager {
                         JobContract.KEY_ID + "=" + cursor.getInt(0), null);
             }
         }
+    }
+
+    public void forwardDocuments(Step step) {
+        super.getDb().execSQL("UPDATE " + DataBaseManagerDocument.DocumentContract.TABLE
+            + " SET " + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " = 0 "
+            + " WHERE " + DataBaseManagerDocument.DocumentContract.KEY_WORK + " = " + step.getId_work()
+            + " AND " + DataBaseManagerDocument.DocumentContract.KEY_WORKSTEP + " = " + step.getId()
+            + " AND " + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " = 1 "
+        );
+    }
+
+    public int getSyncDocuments(Step step) {
+        Cursor cursor = super.getDb().rawQuery("SELECT COUNT(" + DataBaseManagerDocument.DocumentContract.KEY_ID + ")"
+            + " FROM " + DataBaseManagerDocument.DocumentContract.TABLE
+            + " WHERE " + DataBaseManagerDocument.DocumentContract.KEY_WORKSTEP + " = " + step.getId()
+            + " AND " + DataBaseManagerDocument.DocumentContract.KEY_WORK + " = " + step.getId_work()
+            + " AND " + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " = 1 ", null);
+        cursor.moveToFirst();
+        return cursor.getInt(0);
     }
 
     public static interface JobContract {

@@ -12,6 +12,7 @@ import com.google.android.gms.analytics.Tracker;
 import com.koiti.mctjobs.Application;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.GPSTracker;
+import com.koiti.mctjobs.helpers.UserSessionManager;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -33,6 +34,8 @@ public class TrackerGpsService extends Service {
 
     private String NMEA_VERSION = "MM001";
 
+    private UserSessionManager mSession;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -48,6 +51,9 @@ public class TrackerGpsService extends Service {
 
         // Get telephony manager
         telephony = (TelephonyManager)getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+
+        // Session
+        mSession = new UserSessionManager(this);
     }
 
     @Override
@@ -67,6 +73,7 @@ public class TrackerGpsService extends Service {
                         StringBuffer nmea = new StringBuffer();
                         nmea.append(telephony.getDeviceId()).append(":").append("200");
                         nmea.append(",").append(NMEA_VERSION);
+                        nmea.append(",").append(mSession.getPartner());
                         nmea.append(",").append(gps.getLatitude()).append(",").append(gps.getLongitude());
                         nmea.append(",").append(gps.getSpeed());
                         nmea.append(",").append(gps.getAccuracy());
