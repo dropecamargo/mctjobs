@@ -173,8 +173,6 @@ public class NotificationService extends Service {
             }
             params.put("fields", fields != null ? (Object) fields : JSONObject.NULL);
 
-            System.out.println(params.toString());
-
             // Documents
             JSONArray documents = new JSONArray();
             if (notification.getDocuments() != null && !notification.getDocuments().isEmpty()) {

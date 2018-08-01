@@ -7,8 +7,8 @@ android {
         applicationId "com.koiti.mctjobs"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 25
-        versionName "3.4"
+        versionCode 31
+        versionName "3.10"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

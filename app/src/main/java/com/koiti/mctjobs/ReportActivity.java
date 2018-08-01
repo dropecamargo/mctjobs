@@ -293,15 +293,22 @@ public class ReportActivity extends ActionBarActivity {
                                 break;
 
                             case "NUMBERSPINER":
-                                try {
-                                    ArrayList<Item> spinnerArray = new ArrayList<Item>();
-                                    spinnerArray.add(new Item(0, "Seleccione"));
+                                ArrayList<Item> spinnerArray = new ArrayList<Item>();
+                                spinnerArray.add(new Item(0, "Seleccione"));
 
+                                try {
                                     JSONArray jsonArray = new JSONArray(field.getDomain());
                                     for (int j = 0; j < jsonArray.length(); ++j) {
                                         spinnerArray.add(new Item(jsonArray.getInt(j), jsonArray.getString(j)));
                                     }
+                                } catch (JSONException e) {
+                                    Log.e(TAG, e.getMessage());
 
+                                    tracker.send(new HitBuilders.ExceptionBuilder()
+                                            .setDescription(String.format("%s:%s NUMBERSPINER", TAG, e.getLocalizedMessage()))
+                                            .setFatal(false)
+                                            .build());
+                                }finally {
                                     ArrayAdapter<Item> spinnerAdapter = new ArrayAdapter<Item>(this, android.R.layout.simple_spinner_item, spinnerArray);
                                     spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -310,19 +317,6 @@ public class ReportActivity extends ActionBarActivity {
                                     spinner.setLayoutParams(new ActionBar.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.WRAP_CONTENT));
                                     spinner.setAdapter(spinnerAdapter);
                                     layout_dynamic_form.addView(spinner);
-
-                                } catch (JSONException e) {
-                                    Log.e(TAG, e.getMessage());
-
-                                    tracker.send(new HitBuilders.ExceptionBuilder()
-                                            .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                            .setFatal(false)
-                                            .build());
-
-                                    Toast.makeText(this, R.string.on_failure_field, Toast.LENGTH_LONG).show();
-
-                                    finish();
-                                    return;
                                 }
                                 break;
 
@@ -421,16 +415,23 @@ public class ReportActivity extends ActionBarActivity {
                                 break;
 
                             case "SELECT":
-                                try {
-                                    ArrayList<Item> selectArray = new ArrayList<Item>();
-                                    selectArray.add(new Item(0, "Seleccione"));
+                                ArrayList<Item> selectArray = new ArrayList<Item>();
+                                selectArray.add(new Item(0, "Seleccione"));
 
+                                try {
                                     JSONArray jsonArray = new JSONArray(field.getDomain());
                                     for (int j = 0; j < jsonArray.length(); ++j) {
                                         JSONObject json = (JSONObject) jsonArray.get(j);
                                         selectArray.add(new Item(json.getInt("id"), json.getString("name")));
                                     }
+                                } catch (JSONException e) {
+                                    Log.e(TAG, e.getMessage());
 
+                                    tracker.send(new HitBuilders.ExceptionBuilder()
+                                        .setDescription(String.format("%s:%s SELECT", TAG, e.getLocalizedMessage()))
+                                        .setFatal(false)
+                                        .build());
+                                }finally {
                                     ArrayAdapter<Item> selectAdapter = new ArrayAdapter<Item>(this, android.R.layout.simple_spinner_item, selectArray);
                                     selectAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -439,19 +440,6 @@ public class ReportActivity extends ActionBarActivity {
                                     select.setLayoutParams(new ActionBar.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.WRAP_CONTENT));
                                     select.setAdapter(selectAdapter);
                                     layout_dynamic_form.addView(select);
-
-                                } catch (JSONException e) {
-                                    Log.e(TAG, e.getMessage());
-
-                                    tracker.send(new HitBuilders.ExceptionBuilder()
-                                            .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                            .setFatal(false)
-                                            .build());
-
-                                    Toast.makeText(this, R.string.on_failure_field, Toast.LENGTH_LONG).show();
-
-                                    finish();
-                                    return;
                                 }
                                 break;
                         }
@@ -648,6 +636,7 @@ public class ReportActivity extends ActionBarActivity {
                                 return;
                             }
                             String fields = resultfields.get("values").toString();
+
                             // Set report step
                             mJob.changeReport(step, date);
 

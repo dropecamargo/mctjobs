@@ -79,7 +79,7 @@ public class DocumentService extends Service {
                 {
                     final Document document = mJob.getNextDocument();
                     if(document != null) {
-                         System.out.println("Encuentro documento -> " + document.getId() + " Processing -> " + document.getProcessing());
+                        // System.out.println("Encuentro documento -> " + document.getId() + " Processing -> " + document.getProcessing());
                         if( document.getProcessing() == false ) {
                             // System.out.println("Ingreso a procesar documento -> " + document.getId());
                             mRestClientApp.getSyncAccessToken(new JsonHttpResponseHandler() {
@@ -147,6 +147,10 @@ public class DocumentService extends Service {
             // Recicle bitmap
             GlideBitmapPool.putBitmap(bmImage);
 
+            if(bmImage != null) {
+                bmImage.recycle();
+            }
+
             // System.out.println("Document reportando -> " + params.toString());
 
             // Sync report
@@ -160,7 +164,7 @@ public class DocumentService extends Service {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
-                     System.out.println("onFailure -> " + response);
+                    // System.out.println("onFailure -> " + response);
                     try {
                         if (response == null) {
                             throw new NullPointerException(getApplicationContext().getResources().getString(R.string.on_null_server_exception));

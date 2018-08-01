@@ -356,7 +356,6 @@ public class DataBaseManagerJob extends DataBaseManager {
         for (int i = 0; i < works.length(); i++) {
             JSONObject jsonObject = (JSONObject) works.get(i);
 
-            // System.out.println("Viejo -> " + jsonObject.toString());
             this.parseJob(jsonObject, false);
 
             // Set current step
@@ -437,7 +436,6 @@ public class DataBaseManagerJob extends DataBaseManager {
 
                 this.storeDiscard(discard);
             }
-
 
             // Store steps
             for (int s = 0; s < steps.length(); s++) {

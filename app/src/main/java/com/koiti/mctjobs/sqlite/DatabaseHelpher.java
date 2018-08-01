@@ -26,7 +26,7 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
         db.execSQL(DatabaseManagerPhase.CREATE_TABLE);
         db.execSQL(DataBaseManagerField.CREATE_TABLE);
 
-        Log.d(TAG,"Base de Datos Creada "+DatabaseHelpher.DB_NAME);
+        Log.d(TAG,"Base de Datos Creada " + DatabaseHelpher.DB_NAME);
     }
 
     @Override
@@ -90,12 +90,7 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
                     + DataBaseManagerNotification.NotificationContract.KEY_FIELDS + " TEXT;");
 
             db.execSQL(DataBaseManagerField.CREATE_TABLE);
-        }
-        if (oldVersion < 9) {
-            db.execSQL("ALTER TABLE " + DataBaseManagerField.FieldContract.TABLE + " ADD COLUMN "
-                    + DataBaseManagerField.FieldContract.KEY_ORDEN + " INTEGER;");
-        }
-        if (oldVersion < 10) {
+
             db.execSQL("ALTER TABLE " + DataBaseManagerDocument.DocumentContract.TABLE + " ADD COLUMN "
                     + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " BOOLEAN;");
         }
