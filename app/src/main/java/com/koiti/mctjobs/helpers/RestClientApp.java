@@ -43,22 +43,22 @@ public class RestClientApp {
             KeyStoreException, UnrecoverableKeyException, KeyManagementException {
 
         // Load cert
-        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        trustStore.load(null, null);
+        //KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        //trustStore.load(null, null);
 
-        Certificate cert;
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        //Certificate cert;
+        //CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
-        InputStream caInput = context.getResources().openRawResource(R.raw.mct);
-        try {
-            cert = cf.generateCertificate(caInput);
-        } finally {
-            caInput.close();
-        }
-        trustStore.setCertificateEntry("ca", cert);
+        //InputStream caInput = context.getResources().openRawResource(R.raw.mct);
+        //try {
+        //    cert = cf.generateCertificate(caInput);
+        //} finally {
+        //    caInput.close();
+        //}
+        //trustStore.setCertificateEntry("ca", cert);
 
-        MySSLSocketFactory sf = new MySSLSocketFactory(trustStore);
-        sf.setHostnameVerifier(MySSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
+        //MySSLSocketFactory sf = new MySSLSocketFactory(trustStore);
+        //sf.setHostnameVerifier(MySSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
 
         // Prepare params
         RequestParams params = new RequestParams();
@@ -68,7 +68,7 @@ public class RestClientApp {
 
         // Call API
         AsyncHttpClient client = new AsyncHttpClient();
-        client.setSSLSocketFactory(sf);
+        // client.setSSLSocketFactory(sf);
         client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
         client.addHeader("Authorization", Constants.OAUTH_AUTHORIZATION);
         client.addHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -80,22 +80,22 @@ public class RestClientApp {
             KeyStoreException, UnrecoverableKeyException, KeyManagementException {
 
         // Load cert
-        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        trustStore.load(null, null);
+        //KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        //trustStore.load(null, null);
 
-        Certificate cert;
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        //Certificate cert;
+        //CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
-        InputStream caInput = context.getResources().openRawResource(R.raw.mct);
-        try {
-            cert = cf.generateCertificate(caInput);
-        } finally {
-            caInput.close();
-        }
-        trustStore.setCertificateEntry("ca", cert);
+        //InputStream caInput = context.getResources().openRawResource(R.raw.mct);
+        //try {
+        //    cert = cf.generateCertificate(caInput);
+        //} finally {
+        //    caInput.close();
+        //}
+        //trustStore.setCertificateEntry("ca", cert);
 
-        MySSLSocketFactory sf = new MySSLSocketFactory(trustStore);
-        sf.setHostnameVerifier(MySSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
+        //MySSLSocketFactory sf = new MySSLSocketFactory(trustStore);
+        //sf.setHostnameVerifier(MySSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
 
         // Prepare params
         RequestParams params = new RequestParams();
@@ -105,7 +105,7 @@ public class RestClientApp {
 
         // Call API Login
         SyncHttpClient client = new SyncHttpClient();
-        client.setSSLSocketFactory(sf);
+        //client.setSSLSocketFactory(sf);
         client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
         client.addHeader("Authorization", Constants.OAUTH_AUTHORIZATION);
         client.addHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -158,7 +158,8 @@ public class RestClientApp {
 
     public void syncDocument(ByteArrayEntity entity, JSONObject oaut, JsonHttpResponseHandler jsonHttpResponseHandler) throws UnsupportedEncodingException, JSONException {
         AsyncHttpClient client = new AsyncHttpClient();
-        client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DEFAULT_TIMEOUT);
+        client.setMaxRetriesAndTimeout(Constants.DEFAULT_MAX_RETRIES, Constants.DOCUMENT_TIMEOUT);
+        client.setResponseTimeout(Constants.DOCUMENT_TIMEOUT);
         client.addHeader("Authorization", "Bearer " + oaut.getString("access_token"));
         client.post(null, Constants.URL_POST_DOCUMENT_API, entity, "application/json", jsonHttpResponseHandler);
     }
@@ -200,7 +201,6 @@ public class RestClientApp {
         params.put("longitude", longitude);
         params.put("android_id", Secure.getString(this.context.getContentResolver(), Secure.ANDROID_ID));
         params.put("version", BuildConfig.VERSION_NAME);
-
         ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
 
         // Call API Login

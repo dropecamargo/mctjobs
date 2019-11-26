@@ -9,7 +9,7 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
 
     private static final String TAG = DatabaseHelpher.class.getSimpleName();
     private static final String DB_NAME = "mctjobs.db";
-    private static int DB_SCHEME_VERSION = 10;
+    private static int DB_SCHEME_VERSION = 11;
 
     public DatabaseHelpher(Context context) {
         super(context, DB_NAME, null, DB_SCHEME_VERSION);
@@ -93,6 +93,11 @@ public class DatabaseHelpher extends SQLiteOpenHelper {
 
             db.execSQL("ALTER TABLE " + DataBaseManagerDocument.DocumentContract.TABLE + " ADD COLUMN "
                     + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " BOOLEAN;");
+        }
+        if(oldVersion < 11) {
+            db.execSQL("UPDATE " + DataBaseManagerDocument.DocumentContract.TABLE
+                    + " SET " + DataBaseManagerDocument.DocumentContract.KEY_PROCESSING + " = 0 "
+                    + " WHERE " + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " = 1");
         }
     }
 

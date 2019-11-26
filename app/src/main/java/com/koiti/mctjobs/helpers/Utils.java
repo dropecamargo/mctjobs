@@ -1,15 +1,27 @@
 package com.koiti.mctjobs.helpers;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Base64;
 import android.view.View;
+import android.widget.Toast;
+
+import com.koiti.mctjobs.HomeActivity;
+import com.koiti.mctjobs.LoginActivity;
+import com.koiti.mctjobs.R;
 
 import org.json.JSONObject;
 
@@ -17,6 +29,8 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -83,5 +97,71 @@ public class Utils {
         byte[] encVal = chiper.doFinal(cadena.getBytes());
         byte[] encryptedValue = Base64.encode(encVal, Base64.DEFAULT);
         return new String(encryptedValue);
+    }
+
+    public static List<String> getPermissionBasic(@NonNull Activity activity, String type){
+        List<String> permissionList = new ArrayList<>();
+        if ( Build.VERSION.SDK_INT >= 23) {
+
+            switch (type) {
+                case "BASIC":
+                    String gpsPermission = Manifest.permission.ACCESS_FINE_LOCATION;
+                    String statePhonePermission = Manifest.permission.READ_PHONE_STATE;
+                    if (!Utils.hasPermission(activity, gpsPermission)) {
+                        permissionList.add(gpsPermission);
+                    }
+
+                    if (!Utils.hasPermission(activity, statePhonePermission)) {
+                        permissionList.add(statePhonePermission);
+                    }
+                    break;
+
+                case "CAMERA":
+                    String storagePermission = Manifest.permission.READ_EXTERNAL_STORAGE;
+                    String photoPermission = Manifest.permission.CAMERA;
+                    if (!Utils.hasPermission(activity, storagePermission)) {
+                        permissionList.add(storagePermission);
+                    }
+
+                    if (!Utils.hasPermission(activity, photoPermission)) {
+                        permissionList.add(photoPermission);
+                    }
+                    break;
+            }
+
+        }
+        return permissionList;
+    }
+
+    public static boolean hasPermission(@NonNull Activity activity, String permission) {
+        return  ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static AlertDialog.Builder permissionsDialogBuilder(Context context, String message, DialogInterface.OnClickListener negativeButton,
+                                                               DialogInterface.OnClickListener positiveButton) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            alertDialog = new AlertDialog.Builder(context, android.R.style.Theme_Material_Light_Dialog_Alert);
+        }
+        alertDialog.setCancelable(false);
+        alertDialog.setMessage(context.getResources().getString(R.string.text_permissions_basic_error, message)).setTitle(R.string.title_permissions_error);
+        alertDialog.setNegativeButton("SALIR", negativeButton);
+        alertDialog.setPositiveButton("CONFIGURACIÓN DE APPS", positiveButton);
+        return alertDialog;
+    }
+
+    public static boolean verifyPermissions(int[] grantResults) {
+        // At least one result must be checked.
+        if(grantResults.length < 1){
+            return false;
+        }
+
+        // Verify that each required permission has been granted, otherwise return false.
+        for (int result : grantResults) {
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
     }
 }

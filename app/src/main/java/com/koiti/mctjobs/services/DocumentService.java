@@ -3,17 +3,13 @@ package com.koiti.mctjobs.services;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.glidebitmappool.GlideBitmapFactory;
 import com.glidebitmappool.GlideBitmapPool;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-import com.koiti.mctjobs.Application;
 import com.koiti.mctjobs.R;
 import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.models.Document;
@@ -25,10 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -46,7 +39,6 @@ public class DocumentService extends Service {
     private TimerTask timerTask;
     private DataBaseManagerJob mJob;
     private RestClientApp mRestClientApp;
-    private Tracker tracker;
 
     @Nullable
     @Override
@@ -56,9 +48,6 @@ public class DocumentService extends Service {
 
     @Override
     public void onCreate() {
-        // Get tracker.
-        tracker = ((Application) getApplicationContext()).getTracker();
-
         // Rest client
         mRestClientApp = new RestClientApp(getApplicationContext());
 
@@ -77,6 +66,7 @@ public class DocumentService extends Service {
             public void run() {
                 try
                 {
+                    // System.out.println("Ingreso DocumentService");
                     final Document document = mJob.getNextDocument();
                     if(document != null) {
                         // System.out.println("Encuentro documento -> " + document.getId() + " Processing -> " + document.getProcessing());
@@ -91,10 +81,7 @@ public class DocumentService extends Service {
                                 @Override
                                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
                                     // Tracker exception
-                                    tracker.send(new HitBuilders.ExceptionBuilder()
-                                            .setDescription(String.format("%s:getSyncAccessToken:%s", TAG, R.string.on_failure_oaut_token))
-                                            .setFatal(false)
-                                            .build());
+                                    Crashlytics.logException(throwable);
                                 }
                             });
                         }
@@ -102,10 +89,8 @@ public class DocumentService extends Service {
                 }catch (JSONException | IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException | UnrecoverableKeyException | KeyManagementException e) {
                     Log.e(TAG, e.getLocalizedMessage());
 
-                    tracker.send(new HitBuilders.ExceptionBuilder()
-                            .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                            .setFatal(false)
-                            .build());
+                    // Tracker exception
+                    Crashlytics.logException(e);
 
                     // Reset processing
                     mJob.resetDocumentProcessing();
@@ -151,7 +136,7 @@ public class DocumentService extends Service {
                 bmImage.recycle();
             }
 
-            // System.out.println("Document reportando -> " + params.toString());
+            // System.out.println("Document reportado -> " + params.toString());
 
             // Sync report
             ByteArrayEntity entity = new ByteArrayEntity(params.toString().getBytes("UTF-8"));
@@ -178,10 +163,7 @@ public class DocumentService extends Service {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
                     }finally {
                         // Set processing false
                         mJob.setDocumentProcessing(document, false);
@@ -194,10 +176,8 @@ public class DocumentService extends Service {
         }catch (OutOfMemoryError | Exception e) {
             Log.e(TAG, e.getLocalizedMessage());
 
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            // Tracker exception
+            Crashlytics.logException(e);
 
             // Reset processing
             mJob.resetDocumentProcessing();

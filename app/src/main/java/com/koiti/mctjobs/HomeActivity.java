@@ -1,10 +1,16 @@
 package com.koiti.mctjobs;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -12,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.system.ErrnoException;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -20,14 +25,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.koiti.mctjobs.helpers.GPSTracker;
 import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.helpers.Utils;
 import com.koiti.mctjobs.models.Image;
+import com.koiti.mctjobs.services.TrackerGpsService;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -45,6 +50,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
@@ -52,11 +58,11 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = HomeActivity.class.getSimpleName();
+    static final Integer PERMISSIONS_BASIC_GPS_STATE = 0x1;
 
     private UserSessionManager mSession;
     private RestClientApp mRestClientApp;
     private GPSTracker gps;
-    private Tracker tracker;
     private DataBaseManagerJob mJob;
 
     private ImageView mHomeBackground;
@@ -69,17 +75,15 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private NavigationView navigationView;
     private ActionBar actionBar;
 
+    private Boolean isOpenModalPermissions = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // Get tracker.
-        tracker = ((Application) getApplication()).getTracker();
-
         // Database
         mJob = new DataBaseManagerJob(this);
-
         // System.out.println(FirebaseInstanceId.getInstance().getToken());
 
         // Session
@@ -191,6 +195,23 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // Check permissions
+        if(!isOpenModalPermissions) {
+            checkPermissions();
+        }
+    }
+
+    public void checkPermissions() {
+        List<String> permissionList  = Utils.getPermissionBasic(HomeActivity.this, "BASIC");
+        if (!permissionList.isEmpty()){
+            String[] permissions = permissionList.toArray(new String[permissionList.size()]);
+            ActivityCompat.requestPermissions(HomeActivity.this, permissions, PERMISSIONS_BASIC_GPS_STATE);
+        }
+    }
+
+    @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         switch (item.getItemId()) {
@@ -299,10 +320,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     }catch (Exception e) {
                         Log.e(TAG, e.getMessage());
 
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        // Tracker exception
+                        Crashlytics.logException(e);
 
                         Toast.makeText(HomeActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                     }finally {
@@ -319,19 +338,22 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         }
 
                         // Connect timeout exception
-                        if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+                        if (throwable.getCause() instanceof ConnectTimeoutException) {
                             Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
                         }
 
+                        // Connect timeout exception
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            if (throwable.getCause() instanceof ErrnoException) {
+                                Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+                            }
+                        }
                         Toast.makeText(HomeActivity.this, R.string.on_down_exist, Toast.LENGTH_LONG).show();
                     }catch (Exception e) {
                         Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:downExist:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
                     }
                 }
             });
@@ -348,8 +370,15 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             }
 
             // Connect timeout exception
-            if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+            if (throwable.getCause() instanceof ConnectTimeoutException) {
                 Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+            }
+
+            // Connect timeout exception
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (throwable.getCause() instanceof ErrnoException) {
+                    Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+                }
             }
 
             // Error description
@@ -361,10 +390,45 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             Toast.makeText(HomeActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSIONS_BASIC_GPS_STATE) {
+            if (Utils.verifyPermissions(grantResults)) {
+                startService(new Intent(HomeActivity.this, TrackerGpsService.class));
+
+            } else {
+                AlertDialog.Builder permissionsDialog = Utils.permissionsDialogBuilder(HomeActivity.this,
+                        "\"Ubicación y Teléfono\"",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                isOpenModalPermissions = false;
+                                finish();
+                            }
+                        },
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                isOpenModalPermissions = false;
+
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                intent.setData(uri);
+                                startActivity(intent);
+                            }
+                        }
+                );
+                isOpenModalPermissions = true;
+                permissionsDialog.show();
+            }
+
         }
     }
 }

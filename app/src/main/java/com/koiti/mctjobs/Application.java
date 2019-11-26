@@ -18,8 +18,6 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 public class Application extends android.app.Application {
 
-    private Tracker mTracker;
-
     public Application() {
         super();
     }
@@ -54,18 +52,5 @@ public class Application extends android.app.Application {
 
         // Service maintenance
         startService(new Intent(this, MaintenanceService.class));
-    }
-
-    /**
-     * Gets the default {@link Tracker} for this {@link Application}.
-     * @return tracker
-     */
-    synchronized public Tracker getTracker() {
-        if (mTracker == null) {
-            GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
-            // To enable debug logging use: adb shell setprop log.tag.GAv4 DEBUG
-            mTracker = analytics.newTracker(R.xml.global_tracker);
-        }
-        return mTracker;
     }
 }

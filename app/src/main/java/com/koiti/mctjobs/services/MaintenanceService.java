@@ -6,6 +6,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.koiti.mctjobs.Application;
@@ -24,7 +25,6 @@ public class MaintenanceService extends Service {
 
     private TimerTask timerTask;
     private DataBaseManagerJob mJob;
-    private Tracker tracker;
 
     @Nullable
     @Override
@@ -34,9 +34,6 @@ public class MaintenanceService extends Service {
 
     @Override
     public void onCreate() {
-        // Get tracker.
-        tracker = ((Application) getApplicationContext()).getTracker();
-
         // Database
         mJob = new DataBaseManagerJob(this);
     }
@@ -67,10 +64,8 @@ public class MaintenanceService extends Service {
                 }catch (Exception e) {
                     Log.e(TAG, e.getLocalizedMessage());
 
-                    tracker.send(new HitBuilders.ExceptionBuilder()
-                            .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                            .setFatal(false)
-                            .build());
+                    // Tracker exception
+                    Crashlytics.logException(e);
                 }finally {
                     // End transaction
                     mJob.getDb().endTransaction();

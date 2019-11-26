@@ -16,14 +16,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Turn message -->
+        <!-- Notification picture -->
         <LinearLayout
-            android:id="@+id/layout_message"
+            android:id="@+id/layout_notification"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="15dp"
-            android:paddingTop="10dp"/>
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
+            <!-- Turn message -->
+            <LinearLayout
+                android:id="@+id/layout_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="15dp"
+                android:paddingTop="10dp"/>
+
+            <ImageView
+                android:id="@+id/notification_picture"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:adjustViewBounds="true"
+                android:visibility="gone"/>
+        </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
 </RelativeLayout>

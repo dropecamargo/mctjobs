@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Mct</string>
+    <string name="app_name">MCT Móvil</string>
     <string name="app_def_name">Logística y Transporte</string>
 
     <string name="exit">Salir</string>
@@ -149,4 +149,9 @@
     <string name="nav_item_qr">QR manifiesto</string>
     <string name="nav_item_downexist">Descargar existentes</string>
     <string name="title_activity_terms">TermsActivity</string>
+
+    <!-- Permissions -->
+    <string name="title_permissions_error">Activar acceso en la configuración de la app</string>
+    <string name="text_permissions_basic_error">Desactivaste los permisos de %1$s previamente.\n\nPara permitir el accesso, haz clic en \"Configuración de apps\" a continuación y activa %1$s en el menú de permisos.</string>
+
 </resources>

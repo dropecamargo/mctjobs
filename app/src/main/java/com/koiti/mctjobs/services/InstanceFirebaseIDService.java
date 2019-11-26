@@ -1,19 +1,12 @@
 package com.koiti.mctjobs.services;
 
 
-import android.system.ErrnoException;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.crashlytics.android.Crashlytics;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
-import com.koiti.mctjobs.Application;
-import com.koiti.mctjobs.LoginActivity;
-import com.koiti.mctjobs.R;
 import com.koiti.mctjobs.helpers.RestClientApp;
-import com.koiti.mctjobs.helpers.Utils;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONException;
@@ -28,7 +21,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
 
 public class InstanceFirebaseIDService extends FirebaseInstanceIdService {
     private static final String TAG = InstanceFirebaseIDService.class.getSimpleName();
@@ -53,9 +45,6 @@ public class InstanceFirebaseIDService extends FirebaseInstanceIdService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(final String token) {
-        // Get tracker
-        final Tracker tracker = ((Application) getApplication()).getTracker();
-
         try {
             // Rest client
             RestClientApp mRestClientApp = new RestClientApp(getApplicationContext());
@@ -70,10 +59,7 @@ public class InstanceFirebaseIDService extends FirebaseInstanceIdService {
                     Log.e(TAG, response.toString());
 
                     // Tracker exception
-                    tracker.send(new HitBuilders.ExceptionBuilder()
-                            .setDescription(String.format("%s:AccessToken:%s", TAG, response.toString()))
-                            .setFatal(false)
-                            .build());
+                    Crashlytics.logException(throwable);
                 }
             });
         } catch (JSONException | IOException | NoSuchAlgorithmException | KeyManagementException | UnrecoverableKeyException |
@@ -81,17 +67,11 @@ public class InstanceFirebaseIDService extends FirebaseInstanceIdService {
             Log.e(TAG, e.getMessage());
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
         }
     }
 
     private void sendToken(JSONObject oaut, String token) {
-        // Get tracker
-        final Tracker tracker = ((Application) getApplication()).getTracker();
-
         try {
             // Rest client
             RestClientApp mRestClientApp = new RestClientApp(getApplicationContext());
@@ -101,20 +81,14 @@ public class InstanceFirebaseIDService extends FirebaseInstanceIdService {
                     Log.e(TAG, response.toString());
 
                     // Tracker exception
-                    tracker.send(new HitBuilders.ExceptionBuilder()
-                            .setDescription(String.format("%s:sendTokenFirebase:%s", TAG, response.toString()))
-                            .setFatal(false)
-                            .build());
+                    Crashlytics.logException(throwable);
                 }
             });
         } catch (JSONException | UnsupportedEncodingException e ) {
             Log.e(TAG, e.getMessage());
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:sendToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
         }
     }
 }

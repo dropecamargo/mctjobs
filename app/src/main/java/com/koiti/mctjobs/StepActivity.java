@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.system.ErrnoException;
@@ -21,6 +22,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.google.android.gms.analytics.HitBuilders;
@@ -77,7 +79,6 @@ public class StepActivity extends ActionBarActivity {
     private UserSessionManager mSession;
     private FrameLayout wrapper_layout;
     private ScrollView scroll_detail;
-    private Tracker tracker;
 
     private ImageView mJobImage;
 
@@ -104,9 +105,6 @@ public class StepActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_step);
-
-        // Get tracker
-        tracker = ((Application) getApplication()).getTracker();
 
         // Session
         mSession = new UserSessionManager(this);
@@ -267,10 +265,7 @@ public class StepActivity extends ActionBarActivity {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:getJob:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(StepActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                         finish();
@@ -296,10 +291,7 @@ public class StepActivity extends ActionBarActivity {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:getJob:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(StepActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     } finally {
@@ -566,10 +558,8 @@ public class StepActivity extends ActionBarActivity {
                     }catch (Exception e) {
                         Log.e(TAG, e.getMessage());
 
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        // Tracker exception
+                        Crashlytics.logException(e);
 
                         Toast.makeText(StepActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     }finally {
@@ -656,10 +646,8 @@ public class StepActivity extends ActionBarActivity {
                 }catch (Exception e) {
                     Log.e(TAG, e.getMessage());
 
-                    tracker.send(new HitBuilders.ExceptionBuilder()
-                            .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                            .setFatal(false)
-                            .build());
+                    // Tracker exception
+                    Crashlytics.logException(e);
 
                     Toast.makeText(StepActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                 }finally {
@@ -729,17 +717,20 @@ public class StepActivity extends ActionBarActivity {
             }
 
             // Connect timeout exception
-            if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+            if (throwable.getCause() instanceof ConnectTimeoutException) {
                 Toast.makeText(StepActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (throwable.getCause() instanceof ErrnoException) {
+                    Toast.makeText(StepActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+                }
             }
         }catch (Exception e) {
             Toast.makeText(StepActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
         }finally {
             // Hide progress.
             finish();

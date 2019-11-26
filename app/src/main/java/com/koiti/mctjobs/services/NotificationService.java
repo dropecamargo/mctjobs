@@ -6,6 +6,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.koiti.mctjobs.Application;
@@ -43,7 +44,6 @@ public class NotificationService extends Service {
     private TimerTask timerTask;
     private DataBaseManagerJob mJob;
     private RestClientApp mRestClientApp;
-    private Tracker tracker;
 
     @Nullable
     @Override
@@ -53,9 +53,6 @@ public class NotificationService extends Service {
 
     @Override
     public void onCreate() {
-        // Get tracker.
-        tracker = ((Application) getApplicationContext()).getTracker();
-
         // Rest client
         mRestClientApp = new RestClientApp(getApplicationContext());
 
@@ -88,10 +85,7 @@ public class NotificationService extends Service {
                                 @Override
                                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
                                     // Tracker exception
-                                    tracker.send(new HitBuilders.ExceptionBuilder()
-                                            .setDescription(String.format("%s:getSyncAccessToken:%s", TAG, R.string.on_failure_oaut_token))
-                                            .setFatal(false)
-                                            .build());
+                                    Crashlytics.logException(throwable);
                                 }
                             });
                         }
@@ -99,10 +93,8 @@ public class NotificationService extends Service {
                 }catch (JSONException | IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException | UnrecoverableKeyException | KeyManagementException e) {
                     Log.e(TAG, e.getLocalizedMessage());
 
-                    tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                    // Tracker exception
+                    Crashlytics.logException(e);
 
                     // Reset processing
                     mJob.resetProcessing();
@@ -209,10 +201,7 @@ public class NotificationService extends Service {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
                     }finally {
                         // Set processing false
                         mJob.setProcessing(notification, false);
@@ -226,10 +215,8 @@ public class NotificationService extends Service {
         }catch (JSONException | ParseException | UnsupportedEncodingException e) {
             Log.e(TAG, e.getLocalizedMessage());
 
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            // Tracker exception
+            Crashlytics.logException(e);
 
             // Reset processing
             mJob.resetProcessing();

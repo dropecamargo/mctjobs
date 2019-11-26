@@ -1,6 +1,7 @@
 package com.koiti.mctjobs;
 
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.system.ErrnoException;
@@ -12,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
@@ -48,7 +50,6 @@ public class TermsActivity extends AppCompatActivity {
 
     private View mProgressView;
     private View mFormView;
-    private Tracker tracker;
 
     private ImageView mTermsBackground;
     private ImageView mTermsLogo;
@@ -69,9 +70,6 @@ public class TermsActivity extends AppCompatActivity {
         }
         // Rest client
         mRestClientApp = new RestClientApp(this);
-
-        // Get tracker.
-        tracker = ((Application) getApplication()).getTracker();
 
         // Get Remote Config instance.
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
@@ -107,7 +105,7 @@ public class TermsActivity extends AppCompatActivity {
         // Set url terms
         TextView textView = (TextView) findViewById(R.id.text_link);
         textView.setText(Html.fromHtml("Toca \"Aceptar y continuar\" para aceptar los " +
-                "<a href='http://mct.com.co'>Términos de servicio y Politica de privacidad de MCT</a>"));
+                "<a href='http://mct.com.co/es/Legal'>Términos de servicio y Politica de privacidad de MCT</a>"));
         textView.setClickable(true);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
     }
@@ -169,10 +167,7 @@ public class TermsActivity extends AppCompatActivity {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:reportTerms:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(TermsActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     } finally {
@@ -195,18 +190,22 @@ public class TermsActivity extends AppCompatActivity {
                 throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
             }
 
-            // Connect timeout exception
-            if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+            if (throwable.getCause() instanceof ConnectTimeoutException) {
                 Toast.makeText(TermsActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+            }
+
+            // Connect timeout exception
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (throwable.getCause() instanceof ErrnoException) {
+                    Toast.makeText(TermsActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+                }
             }
         }catch (Exception e) {
             Toast.makeText(TermsActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
+
         }finally {
             // Hide progress.
             Utils.showProgress(false, mFormView, mProgressView);

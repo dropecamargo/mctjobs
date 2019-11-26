@@ -1,5 +1,6 @@
 package com.koiti.mctjobs.fragments;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -15,18 +16,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.koiti.mctjobs.Application;
 import com.koiti.mctjobs.BuildConfig;
-import com.koiti.mctjobs.LoginActivity;
 import com.koiti.mctjobs.R;
 import com.koiti.mctjobs.adapters.JobAdapter;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
-import com.koiti.mctjobs.helpers.Utils;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
 import com.loopj.android.http.AsyncHttpClient;
@@ -68,7 +66,6 @@ public class JobsFragment extends Fragment {
     private JobAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private UserSessionManager mSession;
-    private Tracker tracker;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -79,9 +76,6 @@ public class JobsFragment extends Fragment {
 
         // Session
         mSession = new UserSessionManager(getActivity().getApplicationContext());
-
-        // Get tracker.
-        tracker = ((Application) getActivity().getApplication()).getTracker();
 
         // Database
         mJob = new DataBaseManagerJob(getActivity().getApplicationContext());
@@ -181,10 +175,7 @@ public class JobsFragment extends Fragment {
             Log.e(TAG, e.getMessage());
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
 
             Toast.makeText(getActivity(), R.string.on_failure, Toast.LENGTH_LONG).show();
         }
@@ -222,10 +213,8 @@ public class JobsFragment extends Fragment {
                     }catch (Exception e) {
                         Log.e(TAG, e.getMessage());
 
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        // Tracker exception
+                        Crashlytics.logException(e);
 
                         Toast.makeText(getActivity(), R.string.on_failure, Toast.LENGTH_LONG).show();
 
@@ -254,10 +243,7 @@ public class JobsFragment extends Fragment {
                         Toast.makeText(getActivity(), R.string.on_host_exception, Toast.LENGTH_LONG).show();
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:getJobs:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
                     }finally {
                         // Load adapter list
                         loadList();
@@ -293,8 +279,14 @@ public class JobsFragment extends Fragment {
             }
 
             // Connect timeout exception
-            if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+            if (throwable.getCause() instanceof ConnectTimeoutException) {
                 Toast.makeText(getActivity(), R.string.on_host_exception, Toast.LENGTH_LONG).show();
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (throwable.getCause() instanceof ErrnoException) {
+                    Toast.makeText(getActivity(), R.string.on_host_exception, Toast.LENGTH_LONG).show();
+                }
             }
 
             // Show error
@@ -306,10 +298,8 @@ public class JobsFragment extends Fragment {
             Toast.makeText(getActivity(), R.string.on_host_exception, Toast.LENGTH_LONG).show();
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
+
         }finally {
             // Load adapter list
             loadList();

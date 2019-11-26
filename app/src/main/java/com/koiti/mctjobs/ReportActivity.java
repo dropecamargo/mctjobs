@@ -8,6 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.CardView;
@@ -28,6 +30,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.gun0912.tedpicker.Config;
@@ -47,6 +50,7 @@ import com.koiti.mctjobs.models.Item;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.models.Report;
 import com.koiti.mctjobs.models.Step;
+import com.koiti.mctjobs.services.TrackerGpsService;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -62,11 +66,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 public class ReportActivity extends ActionBarActivity {
     private static final String TAG = ReportActivity.class.getSimpleName();
+    static final Integer PERMISSIONS_PHOTO_IMAGE_STATE = 0x1;
 
     private Job job;
     private Step step;
@@ -76,7 +82,6 @@ public class ReportActivity extends ActionBarActivity {
 
     private UserSessionManager mSession;
     private DataBaseManagerJob mJob;
-    private Tracker tracker;
 
     private ImageView mReportImage;
     private TextView message_step;
@@ -99,15 +104,13 @@ public class ReportActivity extends ActionBarActivity {
     private GridViewAdapter gAdapter;
     public GalleryData gallery_data;
     public ArrayList<Image> gallery_images  = new ArrayList<Image>();
-    public String mCurrentPhotoPath;
+
+    private Boolean isOpenModalPermissions = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report);
-
-        // Get tracker.
-        tracker = ((Application) getApplication()).getTracker();
 
         // Session
         mSession = new UserSessionManager(this);
@@ -304,10 +307,9 @@ public class ReportActivity extends ActionBarActivity {
                                 } catch (JSONException e) {
                                     Log.e(TAG, e.getMessage());
 
-                                    tracker.send(new HitBuilders.ExceptionBuilder()
-                                            .setDescription(String.format("%s:%s NUMBERSPINER", TAG, e.getLocalizedMessage()))
-                                            .setFatal(false)
-                                            .build());
+                                    // Tracker exception
+                                    Crashlytics.logException(e);
+
                                 }finally {
                                     ArrayAdapter<Item> spinnerAdapter = new ArrayAdapter<Item>(this, android.R.layout.simple_spinner_item, spinnerArray);
                                     spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -427,10 +429,9 @@ public class ReportActivity extends ActionBarActivity {
                                 } catch (JSONException e) {
                                     Log.e(TAG, e.getMessage());
 
-                                    tracker.send(new HitBuilders.ExceptionBuilder()
-                                        .setDescription(String.format("%s:%s SELECT", TAG, e.getLocalizedMessage()))
-                                        .setFatal(false)
-                                        .build());
+                                    // Tracker exception
+                                    Crashlytics.logException(e);
+
                                 }finally {
                                     ArrayAdapter<Item> selectAdapter = new ArrayAdapter<Item>(this, android.R.layout.simple_spinner_item, selectArray);
                                     selectAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -461,6 +462,24 @@ public class ReportActivity extends ActionBarActivity {
         getSupportActionBar().setTitle( Utils.capitalize(step.getTitle()) );
         getSupportActionBar().setSubtitle( "(" + Integer.toString(job.getId()) + ") " + job.getDocument() );
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check permissions
+        if(!isOpenModalPermissions) {
+            checkPermissions();
+        }
+    }
+
+    public void checkPermissions() {
+        List<String> permissionList  = Utils.getPermissionBasic(ReportActivity.this, "CAMERA");
+        if (!permissionList.isEmpty()){
+            String[] permissions = permissionList.toArray(new String[permissionList.size()]);
+            ActivityCompat.requestPermissions(ReportActivity.this, permissions, PERMISSIONS_PHOTO_IMAGE_STATE);
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -672,10 +691,8 @@ public class ReportActivity extends ActionBarActivity {
                     }catch (Exception e) {
                         Log.e(TAG, e.getMessage());
 
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        // Tracker exception
+                        Crashlytics.logException(e);
 
                         Toast.makeText(ReportActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     }finally {
@@ -783,6 +800,44 @@ public class ReportActivity extends ActionBarActivity {
                 }
             }
             gAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSIONS_PHOTO_IMAGE_STATE) {
+            if (Utils.verifyPermissions(grantResults)) {
+                startService(new Intent(ReportActivity.this, TrackerGpsService.class));
+
+            } else {
+                AlertDialog.Builder permissionsDialog = Utils.permissionsDialogBuilder(ReportActivity.this,
+                        "\"Memoria y Cámara\"",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                isOpenModalPermissions = false;
+                                finish();
+                            }
+                        },
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                isOpenModalPermissions = false;
+
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                intent.setData(uri);
+                                startActivity(intent);
+                            }
+                        }
+                );
+                isOpenModalPermissions = true;
+                permissionsDialog.show();
+            }
+
         }
     }
 }

@@ -890,7 +890,8 @@ public class DataBaseManagerJob extends DataBaseManager {
 
     public void resetDocumentProcessing() {
         super.getDb().execSQL("UPDATE " + DataBaseManagerDocument.DocumentContract.TABLE
-                + " SET " + DataBaseManagerDocument.DocumentContract.KEY_PROCESSING + " = 0 ");
+                + " SET " + DataBaseManagerDocument.DocumentContract.KEY_PROCESSING + " = 0 "
+                + "WHERE " + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " = 0 ");
     }
 
     public void setDocumentProcessing(Document document, Boolean processing) {
@@ -901,7 +902,8 @@ public class DataBaseManagerJob extends DataBaseManager {
 
     public void setDocumentSynd(Document document) {
         super.getDb().execSQL("UPDATE " + DataBaseManagerDocument.DocumentContract.TABLE
-                + " SET " + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " = 1 "
+                + " SET " + DataBaseManagerDocument.DocumentContract.KEY_SYNC + " = 1, "
+                + DataBaseManagerDocument.DocumentContract.KEY_PROCESSING + " = 0 "
                 + " WHERE " + DataBaseManagerDocument.DocumentContract.KEY_ID + " = " + document.getId());
     }
 

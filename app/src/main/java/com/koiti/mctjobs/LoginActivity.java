@@ -3,7 +3,11 @@ package com.koiti.mctjobs;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.PopupMenu;
 import android.system.ErrnoException;
@@ -23,12 +27,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.core.CrashlyticsCore;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.helpers.Utils;
+import com.koiti.mctjobs.services.TrackerGpsService;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -39,27 +46,20 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
+import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
+import io.fabric.sdk.android.Fabric;
 
 
 /**
@@ -67,10 +67,10 @@ import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
  */
 public class LoginActivity extends ActionBarActivity {
     private static final String TAG = LoginActivity.class.getSimpleName();
+    static final Integer PERMISSIONS_BASIC_GPS_STATE = 0x1;
 
     private UserSessionManager mSession;
     private RestClientApp mRestClientApp;
-    private Tracker tracker;
 
     private LinearLayout mLoginForm;
     private LinearLayout mLoginPhone;
@@ -88,13 +88,12 @@ public class LoginActivity extends ActionBarActivity {
     private View mProgressView;
     private View mLoginFormView;
 
+    private Boolean isOpenModalPermissions = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        // Get tracker.
-        tracker = ((Application) getApplication()).getTracker();
 
         // Session
         mSession = new UserSessionManager(this);
@@ -103,6 +102,7 @@ public class LoginActivity extends ActionBarActivity {
         mRestClientApp = new RestClientApp(this);
 
         // Set up the login form.
+
         mLoginBackground = (ImageView) findViewById(R.id.login_background);
         mLoginLogo = (ImageView) findViewById(R.id.login_logo);
         mLoginType = (ImageView) findViewById(R.id.login_type);
@@ -227,6 +227,23 @@ public class LoginActivity extends ActionBarActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check permissions
+        if(!isOpenModalPermissions) {
+            checkPermissions();
+        }
+    }
+
+    public void checkPermissions() {
+        List<String> permissionList  = Utils.getPermissionBasic(LoginActivity.this, "BASIC");
+        if (!permissionList.isEmpty()){
+            String[] permissions = permissionList.toArray(new String[permissionList.size()]);
+            ActivityCompat.requestPermissions(LoginActivity.this, permissions, PERMISSIONS_BASIC_GPS_STATE);
+        }
+    }
+
     public void typeLogin(View view) {
         mPopupMenu.show();
     }
@@ -339,10 +356,7 @@ public class LoginActivity extends ActionBarActivity {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:LoginAccount:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     } finally {
@@ -538,17 +552,21 @@ public class LoginActivity extends ActionBarActivity {
             }
 
             // Connect timeout exception
-            if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+            if (throwable.getCause() instanceof ConnectTimeoutException) {
                 Toast.makeText(LoginActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+            }
+
+            // Connect timeout exception
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (throwable.getCause() instanceof ErrnoException) {
+                    Toast.makeText(LoginActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+                }
             }
         }catch (Exception e) {
             Toast.makeText(LoginActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
         }finally {
             // Hide progress.
             Utils.showProgress(false, mLoginFormView, mProgressView);
@@ -570,10 +588,7 @@ public class LoginActivity extends ActionBarActivity {
             Log.e(TAG, e.getMessage());
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:LoginAccount:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
 
             Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
         } finally {
@@ -591,6 +606,7 @@ public class LoginActivity extends ActionBarActivity {
             mRestClientApp.loginAccount(account, Utils.encrypt(password), oaut, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    // System.out.println("onSuccess: " + response.toString());
                     // Valid response
                     try
                     {
@@ -607,7 +623,7 @@ public class LoginActivity extends ActionBarActivity {
                             finish();
                         }else{
                             JSONObject error = response.getJSONObject("error");
-                            Toast.makeText(LoginActivity.this, error.getString("message"), Toast.LENGTH_LONG).show();
+                            Toast.makeText(LoginActivity.this, error.getString("msg"), Toast.LENGTH_LONG).show();
 
                             // Hide progress.
                             Utils.showProgress(false, mLoginFormView, mProgressView);
@@ -623,6 +639,7 @@ public class LoginActivity extends ActionBarActivity {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+                    // System.out.println("onFailure: " + response.toString());
                     // Valid response
                     try
                     {
@@ -632,16 +649,13 @@ public class LoginActivity extends ActionBarActivity {
 
                         if( response.getBoolean("successful") == false) {
                             JSONObject error = response.getJSONObject("error");
-                            Toast.makeText(LoginActivity.this, error.getString("message"), Toast.LENGTH_LONG).show();
+                            Toast.makeText(LoginActivity.this, error.getString("msg"), Toast.LENGTH_LONG).show();
                         }
                     } catch (JSONException | NullPointerException e ) {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:LoginAccount:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     } finally {
@@ -710,10 +724,7 @@ public class LoginActivity extends ActionBarActivity {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:LoginAccount:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     } finally {
@@ -725,6 +736,44 @@ public class LoginActivity extends ActionBarActivity {
         } catch (JSONException | UnsupportedEncodingException e ) {
             Log.e(TAG, e.getMessage());
             Toast.makeText(LoginActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSIONS_BASIC_GPS_STATE) {
+            if (Utils.verifyPermissions(grantResults)) {
+                startService(new Intent(LoginActivity.this, TrackerGpsService.class));
+
+            } else {
+                AlertDialog.Builder permissionsDialog = Utils.permissionsDialogBuilder(LoginActivity.this,
+                        "\"Ubicación y Teléfono\"",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                isOpenModalPermissions = false;
+                                finish();
+                            }
+                        },
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                isOpenModalPermissions = false;
+
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                intent.setData(uri);
+                                startActivity(intent);
+                            }
+                        }
+                );
+                isOpenModalPermissions = true;
+                permissionsDialog.show();
+            }
+
         }
     }
 }

@@ -2,6 +2,7 @@ package com.koiti.mctjobs;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -19,8 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.crashlytics.android.Crashlytics;
 import com.koiti.mctjobs.fragments.MessageFragment;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.GPSTracker;
@@ -57,7 +57,6 @@ public class TurnActivity extends ActionBarActivity {
 
     private UserSessionManager mSession;
     private RestClientApp mRestClientApp;
-    private Tracker tracker;
 
     private View mFormView;
     private View mTurnFormView;
@@ -92,9 +91,6 @@ public class TurnActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_turn);
-
-        // Get tracker.
-        tracker = ((Application) getApplication()).getTracker();
 
         // Session
         mSession = new UserSessionManager(this);
@@ -214,25 +210,28 @@ public class TurnActivity extends ActionBarActivity {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
-                    // System.out.println("onFailure -> " + response.toString());
+                    System.out.println("onFailure -> " + response.toString());
                     try
                     {
                         if(response == null) {
                             throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
                         }
 
-                        JSONObject data = response.getJSONObject("data");
-                        if( !data.getString("mensaje").isEmpty() ) {
-                            Toast.makeText(TurnActivity.this, data.getString("mensaje"), Toast.LENGTH_LONG).show();
+                        JSONObject error = response.getJSONObject("error");
+                        if( !error.getString("message").isEmpty() ) {
+                            Toast.makeText(TurnActivity.this, error.getString("message"), Toast.LENGTH_LONG).show();
+
+                        }else {
+                            JSONObject data = response.getJSONObject("data");
+                            if (!data.getString("mensaje").isEmpty()) {
+                                Toast.makeText(TurnActivity.this, data.getString("mensaje"), Toast.LENGTH_LONG).show();
+                            }
                         }
                     } catch (JSONException | NullPointerException e ) {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:prepareTurn:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(TurnActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     } finally {
@@ -250,6 +249,7 @@ public class TurnActivity extends ActionBarActivity {
     }
 
     public void evaluateTurn(JSONObject response) {
+        // System.out.println("evaluateTurn -> " + response.toString());
         try {
             // Errors
             if(response == null) {
@@ -381,10 +381,7 @@ public class TurnActivity extends ActionBarActivity {
             Log.e(TAG, e.getMessage());
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:evaluateTurn:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
 
             Toast.makeText(TurnActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
 
@@ -461,10 +458,7 @@ public class TurnActivity extends ActionBarActivity {
                 Toast.makeText(TurnActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
 
                 // Tracker exception
-                tracker.send(new HitBuilders.ExceptionBuilder()
-                        .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                        .setFatal(false)
-                        .build());
+                Crashlytics.logException(e);
 
                 // Hide progress.
                 Utils.showProgress(false, mFormView, mProgressView);
@@ -509,10 +503,7 @@ public class TurnActivity extends ActionBarActivity {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:turnOn:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(TurnActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
 
@@ -540,10 +531,7 @@ public class TurnActivity extends ActionBarActivity {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:turnOn:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(TurnActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     } finally {
@@ -556,10 +544,7 @@ public class TurnActivity extends ActionBarActivity {
             Toast.makeText(TurnActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:turnOn:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
 
             // Hide progress.
             Utils.showProgress(false, mFormView, mProgressView);
@@ -572,18 +557,22 @@ public class TurnActivity extends ActionBarActivity {
                 throw new NullPointerException(getResources().getString(R.string.on_null_server_exception));
             }
 
-            // Connect timeout exception
-            if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+            if (throwable.getCause() instanceof ConnectTimeoutException ) {
                 Toast.makeText(TurnActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+            }
+
+            // Connect timeout exception
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (throwable.getCause() instanceof ErrnoException) {
+                    Toast.makeText(TurnActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+                }
             }
         }catch (Exception e) {
             Toast.makeText(TurnActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
+
         }finally {
             // Hide progress.
             Utils.showProgress(false, mFormView, mProgressView);

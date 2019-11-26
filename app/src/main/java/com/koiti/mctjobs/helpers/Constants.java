@@ -76,6 +76,8 @@ public class Constants {
 
     public static final int DEFAULT_TIMEOUT = 1000;
 
+    public static final int DOCUMENT_TIMEOUT = 12000;
+
     public static final int INTENT_CLOSE_WORK = 508;
 
     public static final int INTENT_DEFAULT = 0;

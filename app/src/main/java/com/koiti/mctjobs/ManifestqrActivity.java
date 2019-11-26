@@ -1,8 +1,8 @@
 package com.koiti.mctjobs;
 
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.system.ErrnoException;
 import android.util.Log;
 import android.view.MenuItem;
@@ -10,8 +10,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+import com.crashlytics.android.Crashlytics;
 import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.helpers.Utils;
@@ -37,7 +36,6 @@ public class ManifestqrActivity extends ActionBarActivity {
 
     private UserSessionManager mSession;
     private RestClientApp mRestClientApp;
-    private Tracker tracker;
 
     private View mFormView;
     private View mProgressView;
@@ -47,9 +45,6 @@ public class ManifestqrActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manifestqr);
-
-        // Get tracker.
-        tracker = ((Application) getApplication()).getTracker();
 
         // Session
         mSession = new UserSessionManager(this);
@@ -134,10 +129,7 @@ public class ManifestqrActivity extends ActionBarActivity {
                         Log.e(TAG, e.getMessage());
 
                         // Tracker exception
-                        tracker.send(new HitBuilders.ExceptionBuilder()
-                                .setDescription(String.format("%s:prepareQRManifest:%s", TAG, e.getLocalizedMessage()))
-                                .setFatal(false)
-                                .build());
+                        Crashlytics.logException(e);
 
                         Toast.makeText(ManifestqrActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
                     } finally {
@@ -177,10 +169,7 @@ public class ManifestqrActivity extends ActionBarActivity {
             Log.e(TAG, e.getMessage());
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:evaluateTurn:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
 
             Toast.makeText(ManifestqrActivity.this, R.string.on_failure, Toast.LENGTH_LONG).show();
 
@@ -198,8 +187,14 @@ public class ManifestqrActivity extends ActionBarActivity {
             }
 
             // Connect timeout exception
-            if (throwable.getCause() instanceof ConnectTimeoutException || throwable.getCause() instanceof ErrnoException) {
+            if (throwable.getCause() instanceof ConnectTimeoutException) {
                 Toast.makeText(ManifestqrActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (throwable.getCause() instanceof ErrnoException) {
+                    Toast.makeText(ManifestqrActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
+                }
             }
 
             // Error description
@@ -211,10 +206,7 @@ public class ManifestqrActivity extends ActionBarActivity {
             Toast.makeText(ManifestqrActivity.this, R.string.on_host_exception, Toast.LENGTH_LONG).show();
 
             // Tracker exception
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(String.format("%s:AccessToken:%s", TAG, e.getLocalizedMessage()))
-                    .setFatal(false)
-                    .build());
+            Crashlytics.logException(e);
         }finally {
             // Hide progress.
             Utils.showProgress(false, mFormView, mProgressView);

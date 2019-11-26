@@ -1,15 +1,17 @@
 package com.koiti.mctjobs.services;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-import com.koiti.mctjobs.Application;
+import com.crashlytics.android.Crashlytics;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.GPSTracker;
 import com.koiti.mctjobs.helpers.UserSessionManager;
@@ -28,7 +30,6 @@ public class TrackerGpsService extends Service {
     private static final String TAG = TrackerGpsService.class.getSimpleName();
 
     private TimerTask timerTask;
-    private Tracker tracker;
     private GPSTracker gps;
     private TelephonyManager telephony;
 
@@ -46,9 +47,6 @@ public class TrackerGpsService extends Service {
     public void onCreate() {
         Log.e(TAG, "Service TrackerGpsService start...");
 
-        // Get tracker.
-        tracker = ((Application) getApplicationContext()).getTracker();
-
         // Get telephony manager
         telephony = (TelephonyManager)getSystemService(getApplicationContext().TELEPHONY_SERVICE);
 
@@ -58,46 +56,56 @@ public class TrackerGpsService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Timer timer = new Timer();
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    gps = new GPSTracker(getApplicationContext());
-                    if (gps.canGetLocation()) {
-                        // Current date
-                        Date date = new Date();
-                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if ( (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) &&
+                ((ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)) ) {
 
-                        // Prepare nmea
-                        StringBuffer nmea = new StringBuffer();
-                        nmea.append(telephony.getDeviceId()).append(":").append("200");
-                        nmea.append(",").append(NMEA_VERSION);
-                        nmea.append(",").append(mSession.getPartner());
-                        nmea.append(",").append(gps.getLatitude()).append(",").append(gps.getLongitude());
-                        nmea.append(",").append(gps.getSpeed());
-                        nmea.append(",").append(gps.getAccuracy());
-                        nmea.append(",").append(gps.getAltitude());
-                        nmea.append(",").append(gps.getBearing());
-                        nmea.append(",").append(gps.getTime());
-                        nmea.append(",").append(dateFormat.format(date));
+            gps = new GPSTracker(getApplicationContext());
 
-                        DatagramSocket socket = new DatagramSocket();
-                        InetAddress server = InetAddress.getByName("gps.mct.com.co");
-                        int msg_length = nmea.toString().length();
-                        byte[] message = nmea.toString().getBytes();
+            Timer timer = new Timer();
+            timerTask = new TimerTask() {
+                @SuppressLint("MissingPermission")
+                @Override
+                public void run() {
+                    try {
+                        if (gps.canGetLocation()) {
+                            // Current date
+                            Date date = new Date();
+                            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-                        DatagramPacket packet = new DatagramPacket(message, msg_length, server, 31401);
-                        socket.send(packet);
+                            // Prepare nmea
+                            StringBuffer nmea = new StringBuffer();
+                            nmea.append(telephony.getDeviceId()).append(":").append("200");
+                            nmea.append(",").append(NMEA_VERSION);
+                            nmea.append(",").append(mSession.getPartner());
+                            nmea.append(",").append(gps.getLatitude()).append(",").append(gps.getLongitude());
+                            nmea.append(",").append(gps.getSpeed());
+                            nmea.append(",").append(gps.getAccuracy());
+                            nmea.append(",").append(gps.getAltitude());
+                            nmea.append(",").append(gps.getBearing());
+                            nmea.append(",").append(gps.getTime());
+                            nmea.append(",").append(dateFormat.format(date));
+
+                            // System.out.println(nmea.toString());
+                            DatagramSocket socket = new DatagramSocket();
+                            InetAddress server = InetAddress.getByName("gps.mct.com.co");
+                            int msg_length = nmea.toString().length();
+                            byte[] message = nmea.toString().getBytes();
+
+                            DatagramPacket packet = new DatagramPacket(message, msg_length, server, 31401);
+                            socket.send(packet);
+                        }
+                    } catch (IOException e) {
+                        // Tracker exception
+                        Crashlytics.logException(e);
+
+                        Log.e(TAG, e.getLocalizedMessage());
                     }
-                } catch (IOException e) {
-                    Log.e(TAG, e.getLocalizedMessage());
                 }
-            }
-        };
+            };
 
-        timer.scheduleAtFixedRate(timerTask, 0, 300000);
-//         timer.scheduleAtFixedRate(timerTask, 0, 5000);
+            timer.scheduleAtFixedRate(timerTask, 0, 300000);
+            //timer.scheduleAtFixedRate(timerTask, 0, 5000);
+        }
         return START_NOT_STICKY;
     }
 

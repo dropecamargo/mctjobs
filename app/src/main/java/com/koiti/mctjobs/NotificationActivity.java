@@ -20,6 +20,7 @@ public class NotificationActivity extends AppCompatActivity {
     private static final String TAG = NotificationActivity.class.getSimpleName();
 
     private ImageView mNotificarionBackground;
+    private ImageView mNotificarionPicture;
     private LinearLayout mLayoutMessage;
 
     private UserSessionManager mSession;
@@ -39,12 +40,14 @@ public class NotificationActivity extends AppCompatActivity {
 
         // Title
         Intent intent = getIntent();
-        String title = intent.getStringExtra("TITLE");
-        String message = intent.getStringExtra("MESSAGE");
+        String title = intent.getStringExtra("title");
+        String message = intent.getStringExtra("message");
+        String picture = intent.getStringExtra("picture");
 
         // References
         mNotificarionBackground = (ImageView) findViewById(R.id.notification_background);
         mLayoutMessage = (LinearLayout) findViewById(R.id.layout_message);
+        mNotificarionPicture = (ImageView) findViewById(R.id.notification_picture);
 
         // Load image background
         ImageLoader loaderBackground = ImageLoader.getInstance();
@@ -64,6 +67,15 @@ public class NotificationActivity extends AppCompatActivity {
         messageFragment.setArguments(messageParameters);
         fragmentTransaction.add(R.id.layout_message, messageFragment, NotificationActivity.TAG);
         fragmentTransaction.commit();
+
+        // Picture image
+        if( picture != null ) {
+            ImageLoader loaderPicture = ImageLoader.getInstance();
+            DisplayImageOptions optionsPicture = new DisplayImageOptions.Builder().cacheInMemory(true)
+                    .cacheOnDisc(true).resetViewBeforeLoading(true).build();
+            loaderPicture.displayImage(picture, mNotificarionPicture, optionsPicture);
+            mNotificarionPicture.setVisibility(View.VISIBLE);
+        }
 
         // Toolbar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
