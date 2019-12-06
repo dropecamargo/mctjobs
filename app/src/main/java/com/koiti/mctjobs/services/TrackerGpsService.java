@@ -12,7 +12,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
-import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.GPSTracker;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 
@@ -45,7 +44,7 @@ public class TrackerGpsService extends Service {
 
     @Override
     public void onCreate() {
-        Log.e(TAG, "Service TrackerGpsService start...");
+        // Log.i(TAG, "Service TrackerGpsService start...");
 
         // Get telephony manager
         telephony = (TelephonyManager)getSystemService(getApplicationContext().TELEPHONY_SERVICE);
@@ -67,6 +66,8 @@ public class TrackerGpsService extends Service {
                 @Override
                 public void run() {
                     try {
+                        // Log.i(TAG, "TrackerGpsService gps.canGetLocation() " + gps.canGetLocation() );
+
                         if (gps.canGetLocation()) {
                             // Current date
                             Date date = new Date();
@@ -85,7 +86,7 @@ public class TrackerGpsService extends Service {
                             nmea.append(",").append(gps.getTime());
                             nmea.append(",").append(dateFormat.format(date));
 
-                            // System.out.println(nmea.toString());
+                            // Log.i(TAG, nmea.toString());
                             DatagramSocket socket = new DatagramSocket();
                             InetAddress server = InetAddress.getByName("gps.mct.com.co");
                             int msg_length = nmea.toString().length();
@@ -106,12 +107,25 @@ public class TrackerGpsService extends Service {
             timer.scheduleAtFixedRate(timerTask, 0, 300000);
             //timer.scheduleAtFixedRate(timerTask, 0, 5000);
         }
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        timerTask.cancel();
-        Intent localIntent = new Intent(Constants.ACTION_MEMORY_EXIT);
+        super.onDestroy();
+
+        Log.i(TAG, "TrackerGpsService ondestroy!");
+
+        Intent broadcastIntent = new Intent("com.koiti.mctjobs.ActivityRecognition.RestartSensor");
+        sendBroadcast(broadcastIntent);
+        stoptimertask();
+    }
+
+    public void stoptimertask() {
+        //stop the timer, if it's not already null
+        if (timerTask != null) {
+            timerTask.cancel();
+            timerTask = null;
+        }
     }
 }

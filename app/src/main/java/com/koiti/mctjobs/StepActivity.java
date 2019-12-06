@@ -3,12 +3,10 @@ package com.koiti.mctjobs;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.system.ErrnoException;
 import android.util.Log;
 import android.view.MenuItem;
@@ -17,7 +15,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,14 +22,11 @@ import android.widget.Toast;
 import com.crashlytics.android.Crashlytics;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.GPSTracker;
 import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.helpers.Utils;
-import com.koiti.mctjobs.models.Discard;
 import com.koiti.mctjobs.models.Job;
 import com.koiti.mctjobs.models.Report;
 import com.koiti.mctjobs.models.Step;
@@ -40,7 +34,6 @@ import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,7 +54,7 @@ import java.util.List;
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
 
-public class StepActivity extends ActionBarActivity {
+public class StepActivity extends AppCompatActivity {
     private static final String TAG = StepActivity.class.getSimpleName();
 
     private RestClientApp mRestClientApp;

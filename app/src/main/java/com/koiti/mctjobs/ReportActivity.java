@@ -11,7 +11,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.text.InputType;
 import android.util.Log;
@@ -70,7 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-public class ReportActivity extends ActionBarActivity {
+public class ReportActivity extends AppCompatActivity {
     private static final String TAG = ReportActivity.class.getSimpleName();
     static final Integer PERMISSIONS_PHOTO_IMAGE_STATE = 0x1;
 

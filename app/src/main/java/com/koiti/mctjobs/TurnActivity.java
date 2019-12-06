@@ -6,7 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.system.ErrnoException;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
 
-public class TurnActivity extends ActionBarActivity {
+public class TurnActivity extends AppCompatActivity {
     private static final String TAG = TurnActivity.class.getSimpleName();
 
     private GPSTracker gps;

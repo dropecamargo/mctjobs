@@ -1,5 +1,6 @@
 package com.koiti.mctjobs;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,12 +27,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
-import com.google.android.gms.analytics.HitBuilders;
 import com.koiti.mctjobs.helpers.GPSTracker;
 import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
 import com.koiti.mctjobs.helpers.Utils;
 import com.koiti.mctjobs.models.Image;
+import com.koiti.mctjobs.services.DocumentService;
+import com.koiti.mctjobs.services.MaintenanceService;
+import com.koiti.mctjobs.services.NotificationService;
 import com.koiti.mctjobs.services.TrackerGpsService;
 import com.koiti.mctjobs.sqlite.DataBaseManagerJob;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -201,6 +204,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         if(!isOpenModalPermissions) {
             checkPermissions();
         }
+
+        // Start service
+        actionService();
     }
 
     public void checkPermissions() {
@@ -430,5 +436,40 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             }
 
         }
+    }
+
+    public void actionService() {
+        // Service tracker gps
+        if (!isMyServiceRunning(TrackerGpsService.class)) {
+            Log.i(TAG, "TrackerGpsService startService");
+            startService(new Intent(this, TrackerGpsService.class));
+        }
+
+        // Service notification
+        if (!isMyServiceRunning(NotificationService.class)) {
+            Log.i(TAG, "NotificationService startService");
+            startService(new Intent(this, NotificationService.class));
+        }
+
+        if (!isMyServiceRunning(DocumentService.class)) {
+            Log.i(TAG, "DocumentService startService");
+            startService(new Intent(this, DocumentService.class));
+        }
+
+        if (!isMyServiceRunning(MaintenanceService.class)) {
+            Log.i(TAG, "MaintenanceService startService");
+            // Service maintenance
+            startService(new Intent(this, MaintenanceService.class));
+        }
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(getApplicationContext().ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature
@@ -69,10 +70,20 @@
             android:name=".services.DocumentService"
             android:enabled="true"
             android:exported="false" />
+
+        <!-- Service GPS -->
         <service
             android:name=".services.TrackerGpsService"
+            android:enabled="true"/>
+        <receiver
+            android:name=".services.TrackerGpsRestarterBroadcastReceiver"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="true"
+            android:label="RestartTrackerGpsServiceWhenStopped">
+            <intent-filter>
+                <action android:name="com.koiti.mctjobs.ActivityRecognition.RestartSensor" />
+            </intent-filter>
+        </receiver>
 
         <!-- Maintenance services -->
         <service

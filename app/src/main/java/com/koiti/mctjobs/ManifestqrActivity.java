@@ -2,7 +2,7 @@ package com.koiti.mctjobs;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.system.ErrnoException;
 import android.util.Log;
 import android.view.MenuItem;
@@ -31,7 +31,7 @@ import java.security.cert.CertificateException;
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
 
-public class ManifestqrActivity extends ActionBarActivity {
+public class ManifestqrActivity extends AppCompatActivity {
     private static final String TAG = ManifestqrActivity.class.getSimpleName();
 
     private UserSessionManager mSession;

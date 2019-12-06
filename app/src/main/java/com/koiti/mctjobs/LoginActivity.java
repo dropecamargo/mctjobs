@@ -8,7 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.system.ErrnoException;
 import android.text.TextUtils;
@@ -28,9 +28,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.core.CrashlyticsCore;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.koiti.mctjobs.helpers.Constants;
 import com.koiti.mctjobs.helpers.RestClientApp;
 import com.koiti.mctjobs.helpers.UserSessionManager;
@@ -59,13 +56,13 @@ import javax.crypto.NoSuchPaddingException;
 
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
-import io.fabric.sdk.android.Fabric;
 
 
 /**
  * A login screen that offers login via email/password.
+ * 0rg0m3Z.
  */
-public class LoginActivity extends ActionBarActivity {
+public class LoginActivity extends AppCompatActivity {
     private static final String TAG = LoginActivity.class.getSimpleName();
     static final Integer PERMISSIONS_BASIC_GPS_STATE = 0x1;
 
